@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build Zig",
+        "type": "shell",
+        "command": "zig",
+        "args": [
+          "build-exe",
+          "gamepad.zig"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }
+  
