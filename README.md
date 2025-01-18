@@ -1,10 +1,10 @@
 # Zig Raspberry Pi Bluetooth HID Game controller
 
-# Setup Raspberry Pi Zero 2 W
+## Setup Raspberry Pi Zero 2 W
 
 Use Raspberry Pi OS Lite (32 bits)
 
-## Install Pigpio
+### Install Pigpio
 
 ```
 sudo apt install python-setuptools python3-setuptools
@@ -13,7 +13,7 @@ make
 sudo make install
 ```
 
-## Install bluetooth with bluez
+### Install bluetooth with bluez
 
 ```
 sudo apt update && sudo apt upgrade -y
@@ -32,4 +32,18 @@ pairable on
 agent on
 ```
 
-## Enable Gadget mode for bluetooth
+### Setup HID for bluetooth
+
+```
+sudo sdptool add --xml=/etc/bluetooth/hid_sdp_record.xml
+
+sudo bluetoothctl
+
+power on
+discoverable on
+pairable on
+agent KeyboardOnly
+default-agent
+
+sudo systemctl enable bluetooth
+```
