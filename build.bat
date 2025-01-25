@@ -5,10 +5,13 @@ REM Path to your Zig executable
 set ZIG_PATH=zig
 
 REM Path to the sysroot (replace with your sysroot location)
-set SYSROOT=sysroot
+set SYSROOT=sysrootrasp
+
+REM Program name
+set PROGRAM_NAME=test
 
 REM Path to your Zig source file
-set SOURCE=src\gamepad.zig
+set SOURCE=src\%PROGRAM_NAME%.zig
 
 REM Build output directory
 set OUTPUT_DIR=bin
@@ -22,11 +25,13 @@ REM Run Zig build command
     --sysroot "%SYSROOT%" ^
     -lc -lbluetooth -lpigpio ^
     -I "%SYSROOT%\usr\include" ^
+    -I "%SYSROOT%\usr\include\arm-linux-gnueabihf" ^
     -L "%SYSROOT%\usr\lib" ^
     -L "%SYSROOT%\lib" ^
-    -L "%SYSROOT%\usr\lib\arm-linux-gnueabihf" ^
-    -femit-bin="%OUTPUT_DIR%\main" ^
+    -L "%SYSROOT%\lib\arm-linux-gnueabihf" ^
+    -femit-bin="%OUTPUT_DIR%\%PROGRAM_NAME%" ^
     -freference-trace=4 ^
+    --verbose-cimport ^
     %SOURCE%
 
 REM Check build result

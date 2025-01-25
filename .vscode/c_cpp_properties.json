@@ -3,7 +3,10 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/sysroot/usr/include/**",
+                "${workspaceFolder}/sysroot/usr/include/arm-linux-gnueabihf/**",
+                "${workspaceFolder}/sysroot/lib/**"
             ],
             "defines": [
                 "_DEBUG",
