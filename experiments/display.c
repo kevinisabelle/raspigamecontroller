@@ -3,36 +3,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include "i2clcd.h"
+#include "lcd1602.h"
 
 #define SPI_CHANNEL_MCP3008 0
 #define SPI_CHANNEL_MAX7219 1
 #define SPI_SPEED 1000000 // 1 MHz
 #define PUSH_BUTTON 26
-#define I2C_ADDRESS 0x27
-
-int lcd_handle;
 
 int spi_handle_mcp3008 = -1; // SPI handle for MCP3008
 int spi_handle_max7219 = -1; // SPI handle for MAX7219
-
-void init_lcd()
-{
-    // Open I2C connection
-    int lcd_handle = i2cOpen(1, I2C_ADDRESS, 0);
-    if (lcd_handle < 0)
-    {
-        fprintf(stderr, "Failed to open I2C connection\n");
-        gpioTerminate();
-    }
-
-    // Initialize the LCD
-    lcd_init(lcd_handle);
-
-    // Write text to the LCD
-    write_line(lcd_handle, 0, "Hello, World!");
-    write_line(lcd_handle, 1, "Pigpio LCD Test");
-}
 
 // Initialize SPI for both devices
 int init_spi()
@@ -137,6 +116,18 @@ int main()
         return 1;
     }
 
+    int rc;
+    rc = lcd1602Init(1, 0x27);
+    if (rc)
+    {
+        printf("Initialization failed; aborting...\n");
+        return 0;
+    }
+    lcd1602WriteString("   Gamepad      ");
+    lcd1602SetCursor(0, 1);
+    lcd1602WriteString("   v0.1         ");
+    lcd1602Control(1, 0, 1); // backlight on, underline off, blink block on
+
     // Setup push button
     gpioSetMode(PUSH_BUTTON, PI_INPUT);
     gpioSetPullUpDown(PUSH_BUTTON, PI_PUD_UP);
@@ -146,7 +137,6 @@ int main()
 
     int frame = 0;
 
-    init_lcd(); // Initialize the LCD
     while (1)
     {
         frame++;
@@ -184,6 +174,23 @@ int main()
             write_max7219(analog_value2_clipped, 1 << (8 - analog_value_clipped));
         }
 
+        if (frame % 60 == 0)
+        {
+            // Update LCD
+            // lcd1602Clear();
+            lcd1602SetCursor(0, 0);
+            char buffer[100]; // Create a buffer to hold the formatted string
+            sprintf(buffer, "Analog 1: %d   ", analog_value);
+            lcd1602WriteString(buffer);
+            // lcd1602WriteInt(analog_value);
+            lcd1602SetCursor(0, 1);
+            char buffer2[100]; // Create a buffer to hold the formatted string
+            sprintf(buffer2, "Analog 2: %d   ", analog_value2);
+            lcd1602WriteString(buffer2);
+            //  lcd1602WriteInt(analog_value2);
+            frame = 0;
+        }
+
         // Wait for the next frame
         time_t endTime = time(NULL);
         double elapsedTime = difftime(endTime, startTime);
@@ -196,6 +203,9 @@ int main()
     }
 
     close_spi();
+    getchar();
+    lcd1602Shutdown();
+
     gpioTerminate();
 
     return 0;
