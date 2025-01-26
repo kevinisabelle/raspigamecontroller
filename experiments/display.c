@@ -102,7 +102,7 @@ void *lcd_refresh_thread(void *arg)
         sprintf(buffer, "Analog 2: %d   ", local_analog_value2);
         lcd1602WriteString(buffer);
 
-        usleep(100000); // Refresh every 100ms
+        usleep(50000); // Refresh every 100ms
     }
     return NULL;
 }

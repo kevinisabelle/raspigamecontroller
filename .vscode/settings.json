@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.embeddedhtml": "html",
-        "coroutine": "cpp"
+        "coroutine": "cpp",
+        "i2clcd.h": "c"
     }
 }
