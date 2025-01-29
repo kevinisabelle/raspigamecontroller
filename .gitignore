@@ -2,3 +2,5 @@ sysroot/
 sysrootrasp/
 bin/
 .zig-cache/
+pcb/gamepad/gamepad-backups/
+sysroot_rpi.zip

@@ -1,5 +1,5 @@
 
-(footprint CNK_THB001P (layer F.Cu) (tedit 67968B8E)
+(footprint CNK_THB001P (layer F.Cu) (tedit 6797BF87)
   (descr "")
   (fp_text reference REF** (at -2.175 -11.675 0) (layer F.SilkS)
     (effects (font (size 1.0 1.0) (thickness 0.15)))
