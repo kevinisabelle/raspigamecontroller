@@ -5,9 +5,10 @@ from gi.repository import GLib
 import constants
 from bluezeclasses import (
     Advertisement,
-    ManualCharacteristic,
-    ManualDescriptor,
-    ManualService,
+    Characteristic,
+    Descriptor,
+    InvalidArgsException,
+    Service,
     Agent,
 )
 
@@ -99,15 +100,6 @@ def register_agent(bus, capability="KeyboardDisplay"):
         print("Failed to register agent:", e)
         raise
 
-def register_profile(bus, service):
-    print("Registering profile...")
-    manager = dbus.Interface(
-        bus.get_object(constants.BLUEZ_SERVICE, constants.BLUEZ_SERVICE_PATH),
-        "org.bluez.ProfileManager1"
-    )
-    manager.RegisterProfile(service.object_path, constants.GATT_SERVICE_HID_UUID, {})
-    print("Profile registered")
-
 class GamePadAdvertisment(Advertisement):
     def __init__(self, bus, index):
         Advertisement.__init__(self, bus, index, 'peripheral')
@@ -115,6 +107,107 @@ class GamePadAdvertisment(Advertisement):
         self.add_local_name('KiGP')
         self.appearance = constants.ADV_APPEARANCE_GAMEPAD
         self.include_tx_power = True
+
+class ReportMapChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, 
+                                constants.GATT_REPORT_MAP_UUID, 
+                                ['read'], service)
+
+class ClientCharacteristicConfigurationDesc(Descriptor):
+    def __init__(self, bus, index, characteristic):
+        Descriptor.__init__(self, bus, index,
+                            constants.GATT_DESC_CLIENT_DESCRIPTOR_UUID,
+                            ['read', 'write'], characteristic)
+        # 2 bytes: first bit for notifications, second for indications.
+        # Default: both disabled.
+        self.value = [0x00, 0x00]
+
+    def ReadValue(self, options):
+        # Return the current configuration.
+        print("CCCD Read: ", self.value)
+        return self.value
+
+    def WriteValue(self, value, options):
+        # Validate the value length.
+        if len(value) != 2:
+            raise InvalidArgsException("CCCD value must be 2 bytes")
+        # Update the configuration value.
+        self.value = value
+        print("CCCD Updated to: ", self.value)
+        # Optionally, you might want to notify the characteristic
+        # that the configuration changed.
+
+class ReportChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, 
+                                constants.GATT_REPORT_UUID, 
+                                ['read', 'notify', 'write-without-response'], service)
+        self.add_descriptor(ClientCharacteristicConfigurationDesc(bus, 0, self))
+
+class ProtocolModeChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, 
+                                constants.GATT_PROTOCOL_MODE_UUID, 
+                                ['read', 'write', 'write-without-response'], service)
+
+class HidInfoChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, 
+                                constants.GATT_HID_INFORMATION_UUID, 
+                                ['read'], service)
+        
+class HidControlPointChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, 
+                                constants.GATT_HID_CONTROL_POINT_UUID, 
+                                ['write'], service)
+        
+
+
+class HidGattService(Service):
+    def __init__(self, bus, index):
+        Service.__init__(self, bus, index, self.HR_UUID, True)
+        self.add_characteristic(ReportMapChrc(bus, 0, self))
+        self.add_characteristic(ReportChrc(bus, 1, self))
+        self.add_characteristic(ProtocolModeChrc(bus, 2, self))
+        self.add_characteristic(HidInfoChrc(bus, 3, self))
+        self.add_characteristic(HidControlPointChrc(bus, 4, self))
+        self.energy_expended = 0
+
+class Application(dbus.service.Object):
+    """
+    org.bluez.GattApplication1 interface implementation
+    """
+    def __init__(self, bus):
+        self.path = '/'
+        self.services = []
+        dbus.service.Object.__init__(self, bus, self.path)
+        #self.add_service(HeartRateService(bus, 0))
+        #self.add_service(BatteryService(bus, 1))
+        #self.add_service(TestService(bus, 2))
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    def add_service(self, service):
+        self.services.append(service)
+
+    @dbus.service.method(constants.DBUS_OM_IFACE, out_signature='a{oa{sa{sv}}}')
+    def GetManagedObjects(self):
+        response = {}
+        print('GetManagedObjects')
+
+        for service in self.services:
+            response[service.get_path()] = service.get_properties()
+            chrcs = service.get_characteristics()
+            for chrc in chrcs:
+                response[chrc.get_path()] = chrc.get_properties()
+                descs = chrc.get_descriptors()
+                for desc in descs:
+                    response[desc.get_path()] = desc.get_properties()
+
+        return response
 
 def main():
     # Initialiser la boucle principale de GLib pour dbus
@@ -132,11 +225,11 @@ def main():
     characteristics = []
 
     # Créer le service HID
-    hid_service = ManualService(bus, constants.SERVICE_PATH, characteristics, constants.GATT_SERVICE_HID_UUID)
+    hid_service = GattService(bus, constants.SERVICE_PATH, characteristics, constants.GATT_SERVICE_HID_UUID)
     print("HID service created at", constants.SERVICE_PATH)
     
     # Créer et exporter les caractéristiques
-    report_map_char = ManualCharacteristic(
+    report_map_char = GattCharacteristic(
         bus,
         f"{constants.SERVICE_PATH}/char0",
         constants.GATT_REPORT_MAP_UUID,
@@ -145,7 +238,7 @@ def main():
         read_handler=report_map_read_handler,
     )
 
-    gamepad_report_char = ManualCharacteristic(
+    gamepad_report_char = GattCharacteristic(
         bus,
         f"{constants.SERVICE_PATH}/char1",
         constants.GATT_REPORT_UUID,
@@ -154,7 +247,7 @@ def main():
         read_handler=gamepad_report_read_handler,
     )
 
-    hid_info_char = ManualCharacteristic(
+    hid_info_char = GattCharacteristic(
         bus,
         f"{constants.SERVICE_PATH}/char2",
         constants.GATT_HID_INFORMATION_UUID,
@@ -163,7 +256,7 @@ def main():
         read_handler=hid_info_read_handler,
     )
 
-    protocol_mode_char = ManualCharacteristic(
+    protocol_mode_char = GattCharacteristic(
         bus,
         f"{constants.SERVICE_PATH}/char3",
         constants.GATT_PROTOCOL_MODE_UUID,
@@ -173,7 +266,7 @@ def main():
     )
 
     # Créer et exporter les descripteurs pour la caractéristique du rapport gamepad
-    report_ref_desc = ManualDescriptor(
+    report_ref_desc = GattDescriptor(
         bus,
         f"{constants.SERVICE_PATH}/char1/desc0",
         f"{constants.SERVICE_PATH}/char1",
@@ -181,7 +274,7 @@ def main():
         bytes([0x01, 0x01])
     )
 
-    ccc_desc = ManualDescriptor(
+    ccc_desc = GattDescriptor(
         bus,
         f"{constants.SERVICE_PATH}/char1/desc1",
         f"{constants.SERVICE_PATH}/char1",
@@ -189,7 +282,7 @@ def main():
         bytes([0x00, 0x01])
     )
 
-    output_report_ref = ManualDescriptor(
+    output_report_ref = GattDescriptor(
         bus,
         f"{constants.SERVICE_PATH}/char1/desc2",
         f"{constants.SERVICE_PATH}/char1",
@@ -222,12 +315,6 @@ def main():
     # Enregistrer la publicité auprès de BlueZ
     register_advertisement(bus, advertisement)
 
-    # register_profile(bus, hid_service)
-    
-   
-
-    # Boucle principale GLib pour garder le service en vie
-    
     try:
         mainloop.run()
     except KeyboardInterrupt:

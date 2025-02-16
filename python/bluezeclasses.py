@@ -187,122 +187,173 @@ class Advertisement(dbus.service.Object):
     def Release(self):
         print('%s: Released!' % self.path)
 
+class Service(dbus.service.Object):
+    """
+    org.bluez.GattService1 interface implementation
+    """
 
-
-# ManualCharacteristic implémente l'interface GattCharacteristic et Properties.
-class ManualCharacteristic(DBusPropertiesObject):
-    def __init__(self, bus, object_path, uuid, flags, service_path, read_handler=None):
-        super().__init__(bus, object_path)
-        self.object_path = object_path
-        self._uuid = uuid
-        self._service = service_path
-        self._flags = flags
-        self._read_handler = read_handler
-        self._descriptors = []
-        self._notifying = False
-        self._value = b""
+    def __init__(self, bus, index, uuid, primary):
+        self.path = constants.SERVICE_PATH + str(index)
+        self.bus = bus
+        self.uuid = uuid
+        self.primary = primary
+        self.characteristics = []
+        dbus.service.Object.__init__(self, bus, self.path)
 
     def get_properties(self):
         return {
-            constants.BLUEZ_GATT_CHARACTERISTIC_IFACE: {
-                "UUID": self._uuid,
-                "Service": self._service,
-                "Flags": self._flags,
-                "Descriptors": self._descriptors
-            }
+                constants.BLUEZ_GATT_SERVICE_IFACE: {
+                        'UUID': self.uuid,
+                        'Primary': self.primary,
+                        'Characteristics': dbus.Array(
+                                self.get_characteristic_paths(),
+                                signature='o')
+                }
         }
 
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    def add_characteristic(self, characteristic):
+        self.characteristics.append(characteristic)
+
+    def get_characteristic_paths(self):
+        result = []
+        for chrc in self.characteristics:
+            result.append(chrc.get_path())
+        return result
+
+    def get_characteristics(self):
+        return self.characteristics
+
+    @dbus.service.method(constants.DBUS_PROPERTIES_IFACE,
+                         in_signature='s',
+                         out_signature='a{sv}')
+    def GetAll(self, interface):
+        if interface != constants.BLUEZ_GATT_SERVICE_IFACE:
+            raise InvalidArgsException()
+
+        return self.get_properties()[constants.BLUEZ_GATT_SERVICE_IFACE]
+
+
+class Characteristic(dbus.service.Object):
+    """
+    org.bluez.GattCharacteristic1 interface implementation
+    """
+    def __init__(self, bus, index, uuid, flags, service):
+        self.path = service.path + '/char' + str(index)
+        self.bus = bus
+        self.uuid = uuid
+        self.service = service
+        self.flags = flags
+        self.descriptors = []
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    def get_properties(self):
+        return {
+                constants.BLUEZ_GATT_CHARACTERISTIC_IFACE: {
+                        'Service': self.service.get_path(),
+                        'UUID': self.uuid,
+                        'Flags': self.flags,
+                        'Descriptors': dbus.Array(
+                                self.get_descriptor_paths(),
+                                signature='o')
+                }
+        }
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    def add_descriptor(self, descriptor):
+        self.descriptors.append(descriptor)
+
+    def get_descriptor_paths(self):
+        result = []
+        for desc in self.descriptors:
+            result.append(desc.get_path())
+        return result
+
+    def get_descriptors(self):
+        return self.descriptors
+
+    @dbus.service.method(constants.DBUS_PROPERTIES_IFACE,
+                         in_signature='s',
+                         out_signature='a{sv}')
+    def GetAll(self, interface):
+        if interface != constants.BLUEZ_GATT_CHARACTERISTIC_IFACE:
+            raise InvalidArgsException()
+
+        return self.get_properties()[constants.BLUEZ_GATT_CHARACTERISTIC_IFACE]
+
     @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE,
-                         in_signature="a{sv}", out_signature="ay")
+                        in_signature='a{sv}',
+                        out_signature='ay')
     def ReadValue(self, options):
-        print("ManualCharacteristic ReadValue called")
-        if self._read_handler:
-            # On suppose que le handler renvoie un objet bytes
-            return list(self._read_handler())
-        print("Default ReadValue called")
-        return [0]
+        print('Default ReadValue called, returning error')
+        raise NotSupportedException()
 
-    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE,
-                         in_signature="aya{sv}", out_signature="")
+    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE, in_signature='aya{sv}')
     def WriteValue(self, value, options):
-        try:
-            # value est une liste d'entiers
-            value_bytes = bytes(value)
-            print("WriteValue called with value:", value_bytes.hex())
-            self._value = value_bytes
-            if len(value_bytes) > 0:
-                report_id = value_bytes[0]
-                if report_id == 0x02 and len(value_bytes) > 1:
-                    led_state = value_bytes[1] & 0x01
-                    print(f"Output report received: LED state = {led_state}")
-        except Exception as ex:
-            print("Error in WriteValue:", ex)
-            raise
+        print('Default WriteValue called, returning error')
+        raise NotSupportedException()
 
-    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE,
-                         in_signature="", out_signature="")
+    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE)
     def StartNotify(self):
-        print("StartNotify called for", self.object_path)
-        if not self._notifying:
-            self._notifying = True
-            if self._read_handler:
-                self._value = self._read_handler()
-                # Dans une implémentation complète, émettre un signal PropertiesChanged
+        print('Default StartNotify called, returning error')
+        raise NotSupportedException()
 
-    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE,
-                         in_signature="", out_signature="")
+    @dbus.service.method(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE)
     def StopNotify(self):
-        print("StopNotify called for", self.object_path)
-        self._notifying = False
+        print('Default StopNotify called, returning error')
+        raise NotSupportedException()
 
-    def SendNotification(self, value: bytes):
-        if self._notifying:
-            self._value = value
-            # Ici, vous pourriez émettre un signal PropertiesChanged
-            print("Notification sent with value:", value.hex())
-
-    def AddDescriptor(self, descriptor_path):
-        self._descriptors.append(descriptor_path)
+    @dbus.service.signal(constants.DBUS_PROPERTIES_IFACE,
+                         signature='sa{sv}as')
+    def PropertiesChanged(self, interface, changed, invalidated):
+        pass
 
 
-# ManualDescriptor implémente l'interface GattDescriptor et Properties.
-class ManualDescriptor(DBusPropertiesObject):
-    def __init__(self, bus, object_path, characteristic_path, uuid, value):
-        super().__init__(bus, object_path)
-        self.object_path = object_path
-        self._characteristic = characteristic_path
-        self._uuid = uuid
-        self._value = value  # de type bytes
+class Descriptor(dbus.service.Object):
+    """
+    org.bluez.GattDescriptor1 interface implementation
+    """
+    def __init__(self, bus, index, uuid, flags, characteristic):
+        self.path = characteristic.path + '/desc' + str(index)
+        self.bus = bus
+        self.uuid = uuid
+        self.flags = flags
+        self.chrc = characteristic
+        dbus.service.Object.__init__(self, bus, self.path)
 
     def get_properties(self):
         return {
-            constants.BLUEZ_GATT_DESCRIPTOR_IFACE: {
-                "UUID": self._uuid,
-                "Characteristic": self._characteristic,
-            }
+                constants.BLUEZ_GATT_DESCRIPTOR_IFACE: {
+                        'Characteristic': self.chrc.get_path(),
+                        'UUID': self.uuid,
+                        'Flags': self.flags,
+                }
         }
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    @dbus.service.method(constants.DBUS_PROPERTIES_IFACE,
+                         in_signature='s',
+                         out_signature='a{sv}')
+    def GetAll(self, interface):
+        if interface != constants.BLUEZ_GATT_DESCRIPTOR_IFACE:
+            raise InvalidArgsException()
+
+        return self.get_properties()[constants.BLUEZ_GATT_DESCRIPTOR_IFACE]
 
     @dbus.service.method(constants.BLUEZ_GATT_DESCRIPTOR_IFACE,
-                         in_signature="a{sv}", out_signature="ay")
+                        in_signature='a{sv}',
+                        out_signature='ay')
     def ReadValue(self, options):
-        # Retourne la valeur stockée sous forme de liste d'entiers
-        return list(self._value)
+        print ('Default ReadValue called, returning error')
+        raise NotSupportedException()
 
-
-# ManualService implémente l'interface GattService et Properties.
-class ManualService(DBusPropertiesObject):
-    def __init__(self, bus, object_path, characteristics, service_uuid):
-        super().__init__(bus, object_path)
-        self.object_path = object_path
-        self._characteristics = characteristics
-        self._uuid = service_uuid
-        self._primary = True
-
-    def get_properties(self):
-        return {
-            constants.BLUEZ_GATT_SERVICE_IFACE: {
-                "UUID": self._uuid,
-                "Primary": dbus.Boolean(self._primary),
-                "Characteristics": self._characteristics
-            }
-        }
+    @dbus.service.method(constants.BLUEZ_GATT_DESCRIPTOR_IFACE, in_signature='aya{sv}')
+    def WriteValue(self, value, options):
+        print('Default WriteValue called, returning error')
+        raise NotSupportedException()
