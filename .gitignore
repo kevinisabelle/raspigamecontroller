@@ -4,3 +4,16 @@ bin/
 .zig-cache/
 pcb/gamepad/gamepad-backups/
 sysroot_rpi.zip
+dotnet/GamePadBTDbus/AgentOnly/obj/
+dotnet/GamePadBTDbus/GamePad2/obj/
+dotnet/GamePadBTDbus/GamePad3/obj/
+dotnet/GamePadBTDbus/GamePadBTDbus/obj/
+dotnet/GamePadBTDbus/obj/
+dotnet/GamePadBTDbus/SendDbus/obj/
+dotnet/GamePadBTDbus/BLEClient/obj/
+dotnet/GamePadBTDbus/GamePad3/publish/
+dotnet/GamePadBTDbus/GamePadBTDbus/publish/
+dotnet/GamePadBTDbus/publish/
+dotnet/GamePadBTDbus/SendDbus/publish/
+dotnet/GamePadBTDbus/GamePad2/publish/
+dotnet/GamePadBTDbus/AgentOnly/publish/

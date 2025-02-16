@@ -1,0 +1,318 @@
+
+> HCI Event: Simple Pairing Complete (0x36) plen 7         #39 [hci0] 37.799175
+        Status: Success (0x00)
+        Address: B0:A4:60:E7:88:52 (Intel Corporate)
+> HCI Event: Link Key Notification (0x18) plen 23          #40 [hci0] 37.816514
+        Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Link key: 0931bb2a1fc83e15a01daf4609c0c170
+        Key type: Authenticated Combination key from P-256 (0x08)
+@ MGMT Event: New Link Key (0x0009) plen 26           {0x0001} [hci0] 37.816580
+        Store hint: Yes (0x01)
+        BR/EDR Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key type: Authenticated Combination key from P-256 (0x08)
+        Link key: 0931bb2a1fc83e15a01daf4609c0c170
+        PIN length: 0
+> HCI Event: Encryption Change (0x08) plen 4               #41 [hci0] 37.940327
+        Status: Success (0x00)
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Encryption: Enabled with AES-CCM (0x02)
+< HCI Command: Read Encryption Key.. (0x05|0x0008) plen 2  #42 [hci0] 37.940399
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+> HCI Event: Command Complete (0x0e) plen 7                #43 [hci0] 37.941536
+      Read Encryption Key Size (0x05|0x0008) ncmd 1
+        Status: Success (0x00)
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key size: 16
+> ACL Data RX: Handle 11 flags 0x02 dlen 24                #44 [hci0] 37.945221
+      Channel: 64 len 20 [PSM 1 mode Basic (0x00)] {chan 0}
+      SDP: Service Search Attribute Request (0x06) tid 0 len 15
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              L2CAP (0x0100)
+        Max record count: 1016
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x0000ffff
+        Continuation state: 0
+< ACL Data TX: Handle 11 flags 0x00 dlen 513               #45 [hci0] 37.946277
+      Channel: 64 len 509 [PSM 1 mode Basic (0x00)] {chan 0}
+      SDP: Service Search Attribute Response (0x07) tid 0 len 504
+        Attribute bytes: 501
+          Attribute list: [len 163] {position 0}
+            Attribute: Service Record Handle (0x0000) [len 2]
+              0x00010001
+            Attribute: Service Class ID List (0x0001) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Generic Access Profile (0x1800)
+            Attribute: Protocol Descriptor List (0x0004) [len 2]
+              Sequence (6) with 6 bytes [8 extra bits] len 8
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  L2CAP (0x0100)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x001f
+              Sequence (6) with 9 bytes [8 extra bits] len 11
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  ATT (0x0007)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0001
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0007
+            Attribute: Browse Group List (0x0005) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Public Browse Root (0x1002)
+            Attribute: Documentation URL (0x000a) [len 2]
+              http://www.bluez.org/ [len 21]
+            Attribute: Client Executable URL (0x000b) [len 2]
+              http://www.bluez.org/ [len 21]
+            Attribute: Icon URL (0x000c) [len 2]
+              http://www.bluez.org/ [len 21]
+            Attribute: Unknown (0x0100) [len 2]
+              Generic Access Profile [len 22]
+            Attribute: Unknown (0x0102) [len 2]
+              BlueZ [len 5]
+          Attribute list: [len 88] {position 1}
+            Attribute: Service Record Handle (0x0000) [len 2]
+              0x00010002
+            Attribute: Service Class ID List (0x0001) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Generic Attribute Profile (0x1801)
+            Attribute: Protocol Descriptor List (0x0004) [len 2]
+              Sequence (6) with 6 bytes [8 extra bits] len 8
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  L2CAP (0x0100)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x001f
+              Sequence (6) with 9 bytes [8 extra bits] len 11
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  ATT (0x0007)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0008
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0011
+            Attribute: Browse Group List (0x0005) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Public Browse Root (0x1002)
+            Attribute: Unknown (0x0100) [len 2]
+              Generic Attribute Profile [len 25]
+            Attribute: Unknown (0x0102) [len 2]
+              BlueZ [len 5]
+          Attribute list: [len 81] {position 2}
+            Attribute: Service Record Handle (0x0000) [len 2]
+              0x00010003
+            Attribute: Service Class ID List (0x0001) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Device Information (0x180a)
+            Attribute: Protocol Descriptor List (0x0004) [len 2]
+              Sequence (6) with 6 bytes [8 extra bits] len 8
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  L2CAP (0x0100)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x001f
+              Sequence (6) with 9 bytes [8 extra bits] len 11
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  ATT (0x0007)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0012
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0014
+            Attribute: Browse Group List (0x0005) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Public Browse Root (0x1002)
+            Attribute: Unknown (0x0100) [len 2]
+              Device Information [len 18]
+            Attribute: Unknown (0x0102) [len 2]
+              BlueZ [len 5]
+          Attribute list: [len 77] {position 3}
+            Attribute: Service Record Handle (0x0000) [len 2]
+              0x00010004
+            Attribute: Service Class ID List (0x0001) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Volume Control (0x1844)
+            Attribute: Protocol Descriptor List (0x0004) [len 2]
+              Sequence (6) with 6 bytes [8 extra bits] len 8
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  L2CAP (0x0100)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x001f
+              Sequence (6) with 9 bytes [8 extra bits] len 11
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  ATT (0x0007)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0015
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x001d
+            Attribute: Browse Group List (0x0005) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Public Browse Root (0x1002)
+            Attribute: Unknown (0x0100) [len 2]
+              Volume Control [len 14]
+            Attribute: Unknown (0x0102) [len 2]
+              BlueZ [len 5]
+          Attribute list: [len 79] {position 4}
+            Attribute: Service Record Handle (0x0000) [len 2]
+              0x00010005
+            Attribute: Service Class ID List (0x0001) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                SIM Access (0x112d)
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Generic Telephony (0x1204)
+            Attribute: Protocol Descriptor List (0x0004) [len 2]
+              Sequence (6) with 3 bytes [8 extra bits] len 5
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  L2CAP (0x0100)
+              Sequence (6) with 5 bytes [8 extra bits] len 7
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  RFCOMM (0x0003)
+                Unsigned Integer (1) with 1 byte [0 extra bits] len 2
+                  0x08
+            Attribute: Browse Group List (0x0005) [len 2]
+              UUID (3) with 2 bytes [0 extra bits] len 3
+                Public Browse Root (0x1002)
+            Attribute: Bluetooth Profile Descriptor List (0x0009) [len 2]
+              Sequence (6) with 6 bytes [8 extra bits] len 8
+                UUID (3) with 2 bytes [0 extra bits] len 3
+                  SIM Access (0x112d)
+                Unsigned Integer (1) with 2 bytes [0 extra bits] len 3
+                  0x0101
+            Attribute: Unknown (0x0100) [len 2]
+              SIM Access Server [len 17]
+        Continuation state: 0
+> ACL Data RX: Handle 11 flags 0x02 dlen 10                #46 [hci0] 37.946631
+      L2CAP: Information Request (0x0a) ident 116 len 2
+        Type: Extended features supported (0x0002)
+< ACL Data TX: Handle 11 flags 0x00 dlen 16                #47 [hci0] 37.946697
+      L2CAP: Information Response (0x0b) ident 116 len 8
+        Type: Extended features supported (0x0002)
+        Result: Success (0x0000)
+        Features: 0x000002b8
+          Enhanced Retransmission Mode
+          Streaming Mode
+          FCS Option
+          Fixed Channels
+          Unicast Connectionless Data Reception
+> HCI Event: Number of Completed Packets (0x13) plen 5     #48 [hci0] 37.956533
+        Num handles: 1
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Count: 2
+> ACL Data RX: Handle 11 flags 0x02 dlen 10                #49 [hci0] 37.966436
+      L2CAP: Information Request (0x0a) ident 117 len 2
+        Type: Fixed channels supported (0x0003)
+< ACL Data TX: Handle 11 flags 0x00 dlen 20                #50 [hci0] 37.966503
+      L2CAP: Information Response (0x0b) ident 117 len 12
+        Type: Fixed channels supported (0x0003)
+        Result: Success (0x0000)
+        Channels: 0x0000000000000086
+          L2CAP Signaling (BR/EDR)
+          Connectionless reception
+          Security Manager (BR/EDR)
+> ACL Data RX: Handle 11 flags 0x02 dlen 24                #51 [hci0] 37.981479
+      Channel: 64 len 20 [PSM 1 mode Basic (0x00)] {chan 0}
+      SDP: Service Search Attribute Request (0x06) tid 1 len 15
+        Search pattern: [len 5]
+          Sequence (6) with 3 bytes [8 extra bits] len 5
+            UUID (3) with 2 bytes [0 extra bits] len 3
+              PnP Information (0x1200)
+        Max record count: 1016
+        Attribute list: [len 7]
+          Sequence (6) with 5 bytes [8 extra bits] len 7
+            Unsigned Integer (1) with 4 bytes [0 extra bits] len 5
+              0x02010205
+        Continuation state: 0
+< ACL Data TX: Handle 11 flags 0x00 dlen 45                #52 [hci0] 37.982014
+      Channel: 64 len 41 [PSM 1 mode Basic (0x00)] {chan 0}
+      SDP: Service Search Attribute Response (0x07) tid 1 len 36
+        Attribute bytes: 33
+          Attribute list: [len 29] {position 0}
+            Attribute: Unknown (0x0201) [len 2]
+              0x1d6b
+            Attribute: Unknown (0x0202) [len 2]
+              0x0246
+            Attribute: Unknown (0x0203) [len 2]
+              0x0542
+            Attribute: Unknown (0x0204) [len 2]
+              true
+            Attribute: Unknown (0x0205) [len 2]
+              0x0002
+        Continuation state: 0
+> ACL Data RX: Handle 11 flags 0x02 dlen 11                #53 [hci0] 37.996428
+      BR/EDR SMP: Pairing Request (0x01) len 6
+        IO capability: DisplayOnly (0x00)
+        OOB data: Authentication data not present (0x00)
+        Authentication requirement: No bonding, No MITM, Legacy, No Keypresses, CT2 (0x20)
+        Max encryption key size: 16
+        Initiator key distribution: EncKey IdKey Sign (0x07)
+        Responder key distribution: EncKey IdKey Sign (0x07)
+< ACL Data TX: Handle 11 flags 0x00 dlen 11                #54 [hci0] 37.996590
+      BR/EDR SMP: Pairing Response (0x02) len 6
+        IO capability: DisplayOnly (0x00)
+        OOB data: Authentication data not present (0x00)
+        Authentication requirement: No bonding, No MITM, Legacy, No Keypresses, CT2 (0x20)
+        Max encryption key size: 16
+        Initiator key distribution: EncKey IdKey Sign (0x07)
+        Responder key distribution: EncKey Sign (0x05)
+< ACL Data TX: Handle 11 flags 0x00 dlen 21                #55 [hci0] 37.996649
+      BR/EDR SMP: Signing Information (0x0a) len 16
+        Signature key: 84e04d951c2d7a4de6bb49d385619a88
+> HCI Event: Number of Completed Packets (0x13) plen 5     #56 [hci0] 37.997719
+        Num handles: 1
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Count: 2
+> HCI Event: Number of Completed Packets (0x13) plen 5     #57 [hci0] 38.000276
+        Num handles: 1
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Count: 2
+> ACL Data RX: Handle 11 flags 0x02 dlen 21                #58 [hci0] 38.003974
+      BR/EDR SMP: Identity Information (0x08) len 16
+        Identity resolving key: d58036b1f1a8005773a3bbbdf5f713e3
+> ACL Data RX: Handle 11 flags 0x02 dlen 12                #59 [hci0] 38.022695
+      BR/EDR SMP: Identity Address Information (0x09) len 7
+        Address: B0:A4:60:E7:88:52 (Intel Corporate)
+> ACL Data RX: Handle 11 flags 0x02 dlen 21                #60 [hci0] 38.023971
+      BR/EDR SMP: Signing Information (0x0a) len 16
+        Signature key: 4d15508b655bfe04712af3725308bc45
+@ MGMT Event: New Identity Resolv.. (0x0018) plen 30  {0x0001} [hci0] 38.024027
+        Store hint: Yes (0x01)
+        Random address: 00:00:00:00:00:00 (Non-Resolvable)
+        LE Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key: d58036b1f1a8005773a3bbbdf5f713e3
+@ MGMT Event: New Signature Resol.. (0x0019) plen 25  {0x0001} [hci0] 38.024051
+        Store hint: Yes (0x01)
+        LE Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key type: Authenticated remote CSRK (0x03)
+        Key: 4d15508b655bfe04712af3725308bc45
+@ MGMT Event: New Signature Resol.. (0x0019) plen 25  {0x0001} [hci0] 38.024060
+        Store hint: Yes (0x01)
+        LE Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key type: Authenticated local CSRK (0x02)
+        Key: 84e04d951c2d7a4de6bb49d385619a88
+@ MGMT Event: New Long Term Key (0x000a) plen 37      {0x0001} [hci0] 38.024069
+        Store hint: Yes (0x01)
+        LE Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Key type: Authenticated key from P-256 (0x03)
+        Central: 0x00
+        Encryption size: 16
+        Diversifier: 0000
+        Randomizer: 0000000000000000
+        Key: 17a23f3bdecea05e30486569897fa010
+> ACL Data RX: Handle 11 flags 0x02 dlen 12                #61 [hci0] 38.068948
+      L2CAP: Disconnection Request (0x06) ident 118 len 4
+        Destination CID: 64
+        Source CID: 64
+< ACL Data TX: Handle 11 flags 0x00 dlen 12                #62 [hci0] 38.069029
+      L2CAP: Disconnection Response (0x07) ident 118 len 4
+        Destination CID: 64
+        Source CID: 64
+> HCI Event: Number of Completed Packets (0x13) plen 5     #63 [hci0] 38.236573
+        Num handles: 1
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Count: 1
+> HCI Event: Disconnect Complete (0x05) plen 4             #64 [hci0] 41.221385
+        Status: Success (0x00)
+        Handle: 11 Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Reason: Remote User Terminated Connection (0x13)
+@ MGMT Event: Device Disconnected (0x000c) plen 8     {0x0001} [hci0] 41.221480
+        BR/EDR Address: B0:A4:60:E7:88:52 (Intel Corporate)
+        Reason: Connection terminated by remote host (0x03)
+

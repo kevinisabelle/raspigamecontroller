@@ -55,6 +55,7 @@ def wait_for_connection():
                     print(f"Device connected: {path}")
                     print(f"Device name: {device.Get('org.bluez.Device1', 'Name')}")
                     print(f"Device address: {device.Get('org.bluez.Device1', 'Address')}")
+
                     return
         time.sleep(1)
 
