@@ -3,7 +3,9 @@ BLUEZ_LEADVERTISEMENT_IFACE = "org.bluez.LEAdvertisement1"
 BLUEZ_GATT_CHARACTERISTIC_IFACE = "org.bluez.GattCharacteristic1"
 BLUEZ_GATT_DESCRIPTOR_IFACE = "org.bluez.GattDescriptor1"
 BLUEZ_GATT_SERVICE_IFACE = "org.bluez.GattService1"
+BLUEZ_GATT_MANAGER_IFACE = "org.bluez.GattManager1"
 DBUS_PROPERTIES_IFACE = "org.freedesktop.DBus.Properties"
+DBUS_OM_IFACE = "org.freedesktop.DBus.ObjectManager"
 
 BLUEZ_SERVICE = "org.bluez"
 ADV_APPEARANCE_GAMEPAD = 0x03C4

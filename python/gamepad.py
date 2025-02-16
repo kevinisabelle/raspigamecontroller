@@ -113,6 +113,9 @@ class ReportMapChrc(Characteristic):
         Characteristic.__init__(self, bus, index, 
                                 constants.GATT_REPORT_MAP_UUID, 
                                 ['read'], service)
+        
+    def ReadValue(self, options):
+        return report_map_read_handler()
 
 class ClientCharacteristicConfigurationDesc(Descriptor):
     def __init__(self, bus, index, characteristic):
@@ -138,18 +141,39 @@ class ClientCharacteristicConfigurationDesc(Descriptor):
         # Optionally, you might want to notify the characteristic
         # that the configuration changed.
 
+class ReportReferenceDesc(Descriptor):
+    def __init__(self, bus, index, characteristic):
+        Descriptor.__init__(self, bus, index,
+                            constants.GATT_DESC_REPORT_REFERENCE_UUID,
+                            ['read'], characteristic)
+        self.value = [0x00, 0x01]
+
+    def ReadValue(self, options):
+        print("Report Reference Read: ", self.value)
+        return self.value
+
 class ReportChrc(Characteristic):
     def __init__(self, bus, index, service):
         Characteristic.__init__(self, bus, index, 
                                 constants.GATT_REPORT_UUID, 
                                 ['read', 'notify', 'write-without-response'], service)
         self.add_descriptor(ClientCharacteristicConfigurationDesc(bus, 0, self))
+        self.add_descriptor(ReportReferenceDesc(bus, 1, self))
+
+    def ReadValue(self, options):
+        print("Report read handler called")
+        return gamepad_report_read_handler()
+    
 
 class ProtocolModeChrc(Characteristic):
     def __init__(self, bus, index, service):
         Characteristic.__init__(self, bus, index, 
                                 constants.GATT_PROTOCOL_MODE_UUID, 
                                 ['read', 'write', 'write-without-response'], service)
+        
+    def ReadValue(self, options):
+        print("Protocol Mode read handler called")
+        return protocol_mode_read_handler()
 
 class HidInfoChrc(Characteristic):
     def __init__(self, bus, index, service):
@@ -157,17 +181,23 @@ class HidInfoChrc(Characteristic):
                                 constants.GATT_HID_INFORMATION_UUID, 
                                 ['read'], service)
         
+    def ReadValue(self, options):
+        print("HID Information read handler called")
+        return hid_info_read_handler()
+        
 class HidControlPointChrc(Characteristic):
     def __init__(self, bus, index, service):
         Characteristic.__init__(self, bus, index, 
                                 constants.GATT_HID_CONTROL_POINT_UUID, 
                                 ['write'], service)
         
-
-
+    def WriteValue(self, value, options):
+        print("HID Control Point write handler called")
+        print("Value:", value)
+        
 class HidGattService(Service):
     def __init__(self, bus, index):
-        Service.__init__(self, bus, index, self.HR_UUID, True)
+        Service.__init__(self, bus, index, constants.GATT_SERVICE_HID_UUID, True)
         self.add_characteristic(ReportMapChrc(bus, 0, self))
         self.add_characteristic(ReportChrc(bus, 1, self))
         self.add_characteristic(ProtocolModeChrc(bus, 2, self))
@@ -183,10 +213,8 @@ class Application(dbus.service.Object):
         self.path = '/'
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
-        #self.add_service(HeartRateService(bus, 0))
-        #self.add_service(BatteryService(bus, 1))
-        #self.add_service(TestService(bus, 2))
-
+        self.add_service(HidGattService(bus, 0))
+       
     def get_path(self):
         return dbus.ObjectPath(self.path)
 
@@ -208,6 +236,16 @@ class Application(dbus.service.Object):
                     response[desc.get_path()] = desc.get_properties()
 
         return response
+    
+def find_adapter(bus):
+    remote_om = dbus.Interface(bus.get_object(constants.BLUEZ_SERVICE, '/'), constants.DBUS_OM_IFACE)
+    objects = remote_om.GetManagedObjects()
+
+    for o, props in objects.items():
+        if constants.BLUEZ_GATT_MANAGER_IFACE in props.keys():
+            return o
+
+    return None
 
 def main():
     # Initialiser la boucle principale de GLib pour dbus
@@ -215,8 +253,10 @@ def main():
     print("Starting GamepadKi...")
     bus = dbus.SystemBus()
 
+    adapter = find_adapter(bus)
+
     # Créer et exporter l'agent
-    agent = Agent(bus, constants.AGENT_PATH)
+    Agent(bus, constants.AGENT_PATH)
 
     mainloop = GLib.MainLoop()
 
@@ -224,91 +264,23 @@ def main():
 
     characteristics = []
 
-    # Créer le service HID
-    hid_service = GattService(bus, constants.SERVICE_PATH, characteristics, constants.GATT_SERVICE_HID_UUID)
-    print("HID service created at", constants.SERVICE_PATH)
+    service_manager = dbus.Interface(
+            bus.get_object(constants.BLUEZ_SERVICE, adapter),
+            constants.BLUEZ_GATT_MANAGER_IFACE)
+
+    app = Application(bus)
+
+    def register_app_cb():
+        print("Application registered")
+
+    def register_app_error_cb(error):
+        print("Failed to register application:", error)
+        mainloop.quit()
+
+    service_manager.RegisterApplication(app.get_path(), {},
+                                    reply_handler=register_app_cb,
+                                    error_handler=register_app_error_cb)
     
-    # Créer et exporter les caractéristiques
-    report_map_char = GattCharacteristic(
-        bus,
-        f"{constants.SERVICE_PATH}/char0",
-        constants.GATT_REPORT_MAP_UUID,
-        ["read"],
-        constants.SERVICE_PATH,
-        read_handler=report_map_read_handler,
-    )
-
-    gamepad_report_char = GattCharacteristic(
-        bus,
-        f"{constants.SERVICE_PATH}/char1",
-        constants.GATT_REPORT_UUID,
-        ["read", "notify", "write-without-response"],
-        constants.SERVICE_PATH,
-        read_handler=gamepad_report_read_handler,
-    )
-
-    hid_info_char = GattCharacteristic(
-        bus,
-        f"{constants.SERVICE_PATH}/char2",
-        constants.GATT_HID_INFORMATION_UUID,
-        ["read"],
-        constants.SERVICE_PATH,
-        read_handler=hid_info_read_handler,
-    )
-
-    protocol_mode_char = GattCharacteristic(
-        bus,
-        f"{constants.SERVICE_PATH}/char3",
-        constants.GATT_PROTOCOL_MODE_UUID,
-        ["read", "write", "write-without-response"],
-        constants.SERVICE_PATH,
-        read_handler=protocol_mode_read_handler,
-    )
-
-    # Créer et exporter les descripteurs pour la caractéristique du rapport gamepad
-    report_ref_desc = GattDescriptor(
-        bus,
-        f"{constants.SERVICE_PATH}/char1/desc0",
-        f"{constants.SERVICE_PATH}/char1",
-        constants.GATT_DESC_REPORT_REFERENCE_UUID,
-        bytes([0x01, 0x01])
-    )
-
-    ccc_desc = GattDescriptor(
-        bus,
-        f"{constants.SERVICE_PATH}/char1/desc1",
-        f"{constants.SERVICE_PATH}/char1",
-        constants.GATT_DESC_CLIENT_DESCRIPTOR_UUID,
-        bytes([0x00, 0x01])
-    )
-
-    output_report_ref = GattDescriptor(
-        bus,
-        f"{constants.SERVICE_PATH}/char1/desc2",
-        f"{constants.SERVICE_PATH}/char1",
-        constants.GATT_DESC_REPORT_REFERENCE_UUID,
-        bytes([0x00, 0x02])
-    )
-
-    # Ajouter les chemins des descripteurs à la caractéristique gamepad
-    gamepad_report_char.AddDescriptor(f"{constants.SERVICE_PATH}/char1/desc0")
-    gamepad_report_char.AddDescriptor(f"{constants.SERVICE_PATH}/char1/desc1")
-    gamepad_report_char.AddDescriptor(f"{constants.SERVICE_PATH}/char1/desc2")
-
-    # Ajouter les chemins des caractéristiques au service HID
-    characteristics.extend([
-        report_map_char.object_path,
-        gamepad_report_char.object_path,
-        hid_info_char.object_path,
-        protocol_mode_char.object_path,
-    ])
-
-    print("Manual GATT server running with:")
-    print(f"  - Report Map Characteristic at {constants.SERVICE_PATH}/char0")
-    print(f"  - Gamepad Report Characteristic at {constants.SERVICE_PATH}/char1")
-    print(f"  - HID Information Characteristic at {constants.SERVICE_PATH}/char2")
-    print(f"  - Protocol Mode Characteristic at {constants.SERVICE_PATH}/char3")
-
     # Créer et exporter la publicité BLE
     advertisement = GamePadAdvertisment(bus, 0)
 
