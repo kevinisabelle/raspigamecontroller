@@ -53,7 +53,7 @@ def report_map_read_handler():
 
 def gamepad_report_read_handler():
     print("Gamepad Report read handler called")
-    return bytes([0x00, 0x00])
+    return bytes([0x01, 0x01, 0x64])
 
 def hid_info_read_handler():
     print("HID Information read handler called")
@@ -124,7 +124,7 @@ class ClientCharacteristicConfigurationDesc(Descriptor):
                             ['read', 'write'], characteristic)
         # 2 bytes: first bit for notifications, second for indications.
         # Default: both disabled.
-        self.value = [0x00, 0x00]
+        self.value = [0x01, 0x00]
 
     def ReadValue(self, options):
         # Return the current configuration.
@@ -151,19 +151,56 @@ class ReportReferenceDesc(Descriptor):
     def ReadValue(self, options):
         print("Report Reference Read: ", self.value)
         return self.value
+    
+class GamePadValues:
+    def __init__(self):
+        self.x = 0x05
+        self.y = 0x06
+        self.button1 = 0x01
+
+    def update(self, x, y, button1):
+        self.x = x
+        self.y = y
+        self.button1 = button1
+
+    def get(self):
+        return [self.button1, self.y]
+    
+    def to_bytes(self):
+        return bytes([0x01, self.button1, self.y])
 
 class ReportChrc(Characteristic):
-    def __init__(self, bus, index, service):
+    def __init__(self, bus, index, service, gamepad_values : GamePadValues):
         Characteristic.__init__(self, bus, index, 
                                 constants.GATT_REPORT_UUID, 
                                 ['read', 'notify', 'write-without-response'], service)
         self.add_descriptor(ClientCharacteristicConfigurationDesc(bus, 0, self))
         self.add_descriptor(ReportReferenceDesc(bus, 1, self))
+        self.notifying = False
+        self.notify_timer = None
+        self.gamepad_values = gamepad_values
 
     def ReadValue(self, options):
         print("Report read handler called")
-        return gamepad_report_read_handler()
+        return self.gamepad_values.to_bytes()
     
+    def StartNotify(self):
+        print("Notification started")
+        self.notifying = True
+        self.notify_timer = GLib.timeout_add(1000, self.send_notification)
+    
+    def StopNotify(self):
+        print("Notification stopped")
+        self.notifying = False
+        GLib.source_remove(self.notify_timer)
+
+    def send_notification(self):
+        if not self.notifying:
+            return False
+        value = self.gamepad_values.to_bytes()
+        print("Sending notification with values:", value.hex())
+        self.PropertiesChanged(constants.BLUEZ_GATT_CHARACTERISTIC_IFACE, {'Value': value}, [])
+        return True
 
 class ProtocolModeChrc(Characteristic):
     def __init__(self, bus, index, service):
@@ -196,10 +233,10 @@ class HidControlPointChrc(Characteristic):
         print("Value:", value)
         
 class HidGattService(Service):
-    def __init__(self, bus, index):
+    def __init__(self, bus, index, gamepad_values : GamePadValues):
         Service.__init__(self, bus, index, constants.GATT_SERVICE_HID_UUID, True)
         self.add_characteristic(ReportMapChrc(bus, 0, self))
-        self.add_characteristic(ReportChrc(bus, 1, self))
+        self.add_characteristic(ReportChrc(bus, 1, self, gamepad_values))
         self.add_characteristic(ProtocolModeChrc(bus, 2, self))
         self.add_characteristic(HidInfoChrc(bus, 3, self))
         self.add_characteristic(HidControlPointChrc(bus, 4, self))
@@ -209,11 +246,11 @@ class Application(dbus.service.Object):
     """
     org.bluez.GattApplication1 interface implementation
     """
-    def __init__(self, bus):
+    def __init__(self, bus, gamepad_values : GamePadValues):
         self.path = '/'
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
-        self.add_service(HidGattService(bus, 0))
+        self.add_service(HidGattService(bus, 0, gamepad_values))
        
     def get_path(self):
         return dbus.ObjectPath(self.path)
@@ -247,6 +284,8 @@ def find_adapter(bus):
 
     return None
 
+gamepad_values = GamePadValues()
+
 def main():
     # Initialiser la boucle principale de GLib pour dbus
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -268,7 +307,7 @@ def main():
             bus.get_object(constants.BLUEZ_SERVICE, adapter),
             constants.BLUEZ_GATT_MANAGER_IFACE)
 
-    app = Application(bus)
+    app = Application(bus, gamepad_values)
 
     def register_app_cb():
         print("Application registered")
