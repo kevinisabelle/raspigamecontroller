@@ -21,14 +21,14 @@ gamepadDef = GamepadDefinition("KiGP", [
     #GamepadControl(HIDControlType.SLIDER, "SL3", 1, 0, 127, 0x00),
     #GamepadControl(HIDControlType.SLIDER, "SL4", 1, 0, 127, 0x00),
 
-    #GamepadControl(HIDControlType.BUTTON, "B123456", 6, 0, 1, 0x00),
+    GamepadControl(HIDControlType.BUTTON, "B123456", 6, 0, 1, 0x03),
 
     #GamepadControl(HIDControlType.POT, "PT1", 1, 0, 127, 0x00),
     #GamepadControl(HIDControlType.POT, "PT2", 1, 0, 127, 0x00),
     #GamepadControl(HIDControlType.POT, "PT3", 1, 0, 127, 0x00),
     #GamepadControl(HIDControlType.POT, "PT4", 1, 0, 127, 0x00),
 
-    GamepadControl(HIDControlType.JOYSTICK, "J1", 2, -127, 127, 0x00235476),
+    #GamepadControl(HIDControlType.JOYSTICK, "J1", 2, -127, 127, 0x00235476),
     #GamepadControl(HIDControlType.JOYSTICK, "J2", 1, -127, 127, 0x00),
 
 ])

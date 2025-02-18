@@ -2,6 +2,7 @@ import threading
 import time
 from HidGamepadReport import GamepadDefinition
 from HidServiceImpl import Application
+import random
 
 class GamepadUpdater:
     def __init__(self, gamepad_def : GamepadDefinition, app: Application, poll_interval=0.05):
@@ -58,4 +59,6 @@ class GamepadUpdater:
         :return: The new value for the control.
         """
         # TODO: Insert hardware reading logic here.
-        return control.value  # Dummy value; replace with real hardware value.
+
+        # Random value from 1 to 6
+        return random.randint(1, 63)

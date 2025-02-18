@@ -23,22 +23,14 @@ class GamepadControl:
     logical_max: int      # Maximum value (e.g., 1 for buttons, 127 for axes)
     value: int = 0x00     # Current value of the control (for multi-button, bits are used)
 
-    def set_value(self, value: int, index: int = -1):
+    def set_value(self, value: int):
         """
         Sets the value of the control.
         For a multi-button control, if index is provided, it sets the bit at that index.
         For single-value controls, index is ignored.
         """
-        if self.type == HIDControlType.BUTTON and self.count > 1:
-            if index < 0 or index >= self.count:
-                raise IndexError("Button index out of range")
-            # Set or clear the bit at the given index.
-            if value:
-                self.value |= (1 << index)
-            else:
-                self.value &= ~(1 << index)
-        else:
-            self.value = value
+        if self.type == HIDControlType.BUTTON:
+           self.value = value
 
     def get_report_bytes(self) -> List[int]:
         """

@@ -39,7 +39,7 @@ class ClientCharacteristicConfigurationDesc(Descriptor):
                             ['read', 'write'], characteristic)
         # 2 bytes: first bit for notifications, second for indications.
         # Default: both disabled.
-        self.value = [0x01, 0x00]
+        self.value = [0x00, 0x00]
 
     def ReadValue(self, options):
         # Return the current configuration.
