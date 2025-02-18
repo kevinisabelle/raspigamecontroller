@@ -87,7 +87,7 @@ public class ReportInputPayloadInterface
 
         // Generate the to_bytes method using bitwise packing.
         // First, calculate total bits.
-        int totalBits = Fields.Sum(f => (f.Index != -1 ? f.BitSize : 0) + f.Padding);
+        int totalBits = Fields.Sum(f => f.BitSize + f.Padding);
         int totalBytes = (totalBits + 7) / 8;
         sb.AppendLine("    def get_report(self):");
         sb.AppendLine("        total = 0");

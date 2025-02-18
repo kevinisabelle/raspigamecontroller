@@ -182,6 +182,45 @@ class HardwareRevisionChrc(Characteristic):
         print("Hardware Revision read handler called")
         return list("1.0".encode())
 
+
+
+class PnpIdChrc(Characteristic):
+    """
+    Implements the PnP ID characteristic (UUID 0x2A50) as part of the
+    Device Information Service. This characteristic provides:
+      - Vendor ID Source (1 byte)
+      - Vendor ID       (2 bytes, little-endian)
+      - Product ID      (2 bytes, little-endian)
+      - Product Version (2 bytes, little-endian)
+    For a total of 7 bytes.
+    """
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, '2a50', ['read'], service)
+
+    def ReadValue(self, options):
+        print("PnP ID read handler called")
+
+        # Example data:
+        #  * Vendor ID Source = 0x02 (USB-IF)
+        #  * Vendor ID        = 0x1234
+        #  * Product ID       = 0x5678
+        #  * Product Version  = 0x0100
+        #
+        # IMPORTANT: The Vendor ID, Product ID, etc. should be little-endian
+        # for this characteristic. For example, 0x1234 => [0x34, 0x12].
+        #
+        # Format = [VendorIdSource, VendorIdLow, VendorIdHigh,
+        #           ProductIdLow, ProductIdHigh,
+        #           ProductVersionLow, ProductVersionHigh]
+
+        pnp_id = [
+            0x02,      # Vendor ID Source (2 => USB-IF)
+            0x34, 0x12,  # Vendor ID (0x1234, little-endian)
+            0x78, 0x56,  # Product ID (0x5678, little-endian)
+            0x00, 0x01   # Product Version (0x0100, little-endian)
+        ]
+        return pnp_id
+    
 class DeviceInfoService(Service):
     def __init__(self, bus, index):
         Service.__init__(self, bus, index, Constants.DEVICE_INFORMATION_SERVICE_UUID, True) # Device Information Service (0x180a)
@@ -189,6 +228,7 @@ class DeviceInfoService(Service):
         self.add_characteristic(ModelNumberChrc(bus, 1, self))
         self.add_characteristic(SerialNumberChrc(bus, 2, self))
         self.add_characteristic(HardwareRevisionChrc(bus, 3, self))
+        self.add_characteristic(PnpIdChrc(bus, 4, self))
 
 class Application(dbus.service.Object):
     """
