@@ -1,9 +1,8 @@
 import random
-from Mcp3008 import read_mcp3008
 import spidev
 
 def read_joystick(index):
-    return random.randint(1, 6)
+    return 0
 
 def read_slider(index):
     # Read the slider value from the gpio
@@ -13,10 +12,26 @@ def read_slider(index):
     return value
 
 def read_rotary(index):
-    return random.randint(1, 6)
+    return 0
 
 def read_pot(index):
-    return random.randint(1, 6)
+    return 0
 
 def read_button(index):
-    return random.randint(0, 1)
+    return 0
+
+def read_mcp3008(channel, spi):
+    """Read analog value from a specified MCP3008 channel (0-7)."""
+    if channel < 0 or channel > 7:
+        raise ValueError("Channel must be between 0 and 7")
+
+    spi.open(1, 0)  # Use SPI1, device 0 (CS0 = GPIO 18)
+    spi.max_speed_hz = 1000000  # Set SPI speed to 1MHz
+    adc = spi.xfer2([1, (8 + channel) << 4, 0])  # Start bit + Single/Diff bit + Channel
+    spi.close()  # Close SPI to release CS0
+
+    result = ((adc[1] & 3) << 8) + adc[2]  # Combine the result bytes
+
+    # resize the value from 0-1023 to 0-255
+    result = int(result / 4)
+    return result

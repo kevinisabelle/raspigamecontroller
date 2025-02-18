@@ -2,9 +2,18 @@
 using HidReportMapCreator.Translation;
 using Spectre.Console;
 
-AnsiConsole.MarkupLine("[bold yellow]Hid Report Map Creator[/]");
-
+// TODO: Change this class to any other device class to generate a report map and payload
 var device = new KiGPSimple().Create();
+
+AnsiConsole.MarkupLine("[bold yellow]Hid Report Map and Payload interface creator[/]");
+AnsiConsole.MarkupLine("[blue]---------------------------------------------------[/]");
+Console.WriteLine();
+
+AnsiConsole.MarkupLine("[navy]Notes: [/]");
+AnsiConsole.MarkupLine("[navy]-------[/]");
+AnsiConsole.MarkupLine("[navy]1. This tool is used to generate a report map and payload for a HID device.[/]");
+AnsiConsole.MarkupLine("[navy]2. The report map is a list of instructions that the device uses to send data to the host.[/]");
+AnsiConsole.MarkupLine("[navy]3. It will generate the Python class code for the report payload to use in the python part of this project.[/]");
 
 var reportMap = device.ToReportMap();
 var reportPayload = device.ToReportPayload();
@@ -49,8 +58,6 @@ Console.WriteLine();
 
 Console.WriteLine(reportPayload.GetPayloadLine(1));
 Console.WriteLine(reportPayload.GetPayloadLine(2));
-
-
 
 Console.WriteLine();
 AnsiConsole.MarkupLine("[blue]------------[/]");

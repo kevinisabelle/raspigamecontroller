@@ -88,7 +88,7 @@ class ReportChrc(Characteristic):
     def StartNotify(self):
         print("Notification started")
         self.notifying = True
-        self.notify_timer = GLib.timeout_add(1000, self.send_notification)
+        # self.notify_timer = GLib.timeout_add(1000, self.send_notification)
     
     def StopNotify(self):
         print("Notification stopped")
@@ -228,7 +228,7 @@ class DeviceInfoService(Service):
         self.add_characteristic(ModelNumberChrc(bus, 1, self))
         self.add_characteristic(SerialNumberChrc(bus, 2, self))
         self.add_characteristic(HardwareRevisionChrc(bus, 3, self))
-        self.add_characteristic(PnpIdChrc(bus, 4, self))
+        # self.add_characteristic(PnpIdChrc(bus, 4, self))
 
 class Application(dbus.service.Object):
     """

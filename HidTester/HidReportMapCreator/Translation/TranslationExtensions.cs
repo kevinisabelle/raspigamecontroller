@@ -3,53 +3,54 @@ using HidReportMapCreator.Hid;
 
 namespace HidReportMapCreator.Translation;
 
-public static class DeviceExtensions
+/// <summary>
+/// Contains extension methods for translating the higher abstraction level definitions to HID report maps and payloads structures.
+/// </summary>
+public static class TranslationExtensions
 {
-    public static int GetUsagePage(this InputType type)
+    public static ReportMap ToReportMap(this Device device)
     {
-        return type switch
-        {
-            InputType.Button => HidUsagePage.Button,
-            InputType.HatSwitch => HidUsagePage.GenericDesktopControls,
-            InputType.Slider => HidUsagePage.GenericDesktopControls,
-            InputType.Dial => HidUsagePage.GenericDesktopControls,
-            InputType.Wheel => HidUsagePage.GenericDesktopControls,
-            InputType.Joystick => HidUsagePage.GenericDesktopControls,
-            _ => HidUsagePage.Undefined
-        };
-    }
-
-    public static string GetUsagePageName(int usagePage)
-    {
-        return usagePage switch
-        {
-            HidUsagePage.Button => "Button",
-            HidUsagePage.GenericDesktopControls => "Generic Desktop Controls",
-            HidUsagePage.KeyboardKeypad => "Keyboard/Keypad",
-            _ => "Undefined"
-        };
-    }
-    
-    public static int GetValueBitSize(this Input input)
-    {
-        return (int)Math.Ceiling(Math.Log(input.Max - input.Min + 1, 2));
-    }
-    
-    public static int GetValuePadding(this Input input)
-    {
-        var requiredBitsForValue = input.GetValueBitSize();
-        return requiredBitsForValue >= 5 ? 8 - requiredBitsForValue : 0;
-    }
-    
-    public static int GetReportPaddingSize(this Input input)
-    {
-        var bitsInPayload = (input.GetValueBitSize()) * input.Count;
-        var uncompletedBytesBits = bitsInPayload % 8;
+        var reportMap = new ReportMap();
         
-        return uncompletedBytesBits == 0 ? 0 : 8 - uncompletedBytesBits;
-    }
+        reportMap.Instructions.Add(new Instruction
+        {
+            Comment = "Usage Page (Generic Desktop Controls)",
+            Data = [HidReportField.USAGE_PAGE, HidUsagePage.GenericDesktopControls],
+        });
+        
+        reportMap.Instructions.Add(new Instruction
+        {
+            Comment = $"Usage ({device.Type})",
+            Data = [HidReportField.USAGE, (byte)device.Type.GetUsage()],
+        });
+        
+        reportMap.Instructions.Add(new Instruction
+        {
+            Comment = "Collection (Application)",
+            Data = [HidReportField.COLLECTION, HidCollectionType.Application],
+        });
+        
+        reportMap.Instructions.Add(new Instruction
+        {
+            Comment = "Report ID 1",
+            Data = [HidReportField.REPORT_ID, 0x01],
+        });
 
-    public static List<Instruction> GetInputInstructions(this Input input)
+        foreach (var input in device.Inputs)
+        {
+            reportMap.Instructions.AddRange(input.GetInputInstructions());
+        }
+        
+        reportMap.Instructions.Add(new Instruction
+        {
+            Comment = "End Collection",
+            Data = [HidReportField.END_COLLECTION],
+        });
+        
+        return reportMap;
+    }
+    
+    private static List<Instruction> GetInputInstructions(this Input input)
     {
         var instructions = new List<Instruction>();
         var usagePage = input.Type.GetUsagePage();
@@ -59,7 +60,7 @@ public static class DeviceExtensions
         
         instructions.Add(new Instruction
         {
-            Comment = $"Usage Page ({GetUsagePageName(usagePage)})",
+            Comment = $"Usage Page ({Mappings.GetUsagePageName(usagePage)})",
             Data = [HidReportField.USAGE_PAGE, (byte)usagePage],
         });
         
@@ -130,10 +131,13 @@ public static class DeviceExtensions
             Data = [HidReportField.REPORT_COUNT, (byte)(input.Count * input.Type.GetUsagesPerInstance())],
         });
         
+        var inputField = (byte)(input.Type.GetInputField() & 0xFF);
+        
         instructions.Add(new Instruction
         {
-            Comment = $"Input (Variable, Absolute, No Wrap, Linear, Preferred State, No Null Position, Bit Field)",
-            Data = [HidReportField.INPUT, IOSettings.VARIABLE & 0xFF],
+            // but the format in the comment to 8 bits
+            Comment = $"Input ({inputField.ToString("B8")})",
+            Data = [HidReportField.INPUT, inputField],
         });
         
         
@@ -141,20 +145,22 @@ public static class DeviceExtensions
         {
             instructions.Add(new Instruction
             {
-                Comment = $"Padding ({input.GetReportPaddingSize()})",
+                Comment = $"Report Size ({input.GetReportPaddingSize()})",
                 Data = [HidReportField.REPORT_SIZE, (byte)input.GetReportPaddingSize()],
             });
             
             instructions.Add(new Instruction
             {
-                Comment = $"Padding Count (1)",
+                Comment = $"Report Count (1)",
                 Data = [HidReportField.REPORT_COUNT, 0x01],
             });
             
+            var inputFieldValue = (byte)(IOSettings.DATA_CONSTANT & 0xFF);
+            
             instructions.Add(new Instruction
             {
-                Comment = $"Padding (Constant)",
-                Data = [HidReportField.INPUT, IOSettings.DATA_CONSTANT & 0xFF],
+                Comment = $"Input ({inputFieldValue.ToString("B8")}) -- Padding",
+                Data = [HidReportField.INPUT, inputFieldValue],
             });
         }
 
@@ -162,51 +168,9 @@ public static class DeviceExtensions
         return instructions;
     }
     
-    public static ReportMap ToReportMap(this Device device)
+    public static ReportPayload ToReportPayload(this Device device)
     {
-        var reportMap = new ReportMap();
-        
-        reportMap.Instructions.Add(new Instruction
-        {
-            Comment = "Usage Page (Generic Desktop Controls)",
-            Data = [HidReportField.USAGE_PAGE, HidUsagePage.GenericDesktopControls],
-        });
-        
-        reportMap.Instructions.Add(new Instruction
-        {
-            Comment = $"Usage ({device.Type})",
-            Data = [HidReportField.USAGE, (byte)device.Type.GetHashCode()],
-        });
-        
-        reportMap.Instructions.Add(new Instruction
-        {
-            Comment = "Collection (Application)",
-            Data = [HidReportField.COLLECTION, HidCollectionType.Application],
-        });
-        
-        reportMap.Instructions.Add(new Instruction
-        {
-            Comment = "Report ID 1",
-            Data = [HidReportField.REPORT_ID, 0x01],
-        });
-
-        foreach (var input in device.Inputs)
-        {
-            reportMap.Instructions.AddRange(input.GetInputInstructions());
-        }
-        
-        reportMap.Instructions.Add(new Instruction
-        {
-            Comment = "End Collection",
-            Data = [HidReportField.END_COLLECTION],
-        });
-        
-        return reportMap;
-    }
-    
-    public static ReportInputPayloadInterface ToReportPayload(this Device device)
-    {
-        var payload = new ReportInputPayloadInterface
+        var payload = new ReportPayload
         {
             ReportId = 0x01
         };

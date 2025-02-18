@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Gaming.Input;
+﻿using Windows.Gaming.Input;
 
 class Program
 {

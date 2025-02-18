@@ -27,14 +27,7 @@ public class KiGPSimple
                     Name = "Btn1",
                     Type = InputType.Button,
                     Group = "Buttons",
-                    Count = 1
-                },
-                new Input
-                {
-                    Name = "Btn2",
-                    Type = InputType.Button,
-                    Group = "Buttons",
-                    Count = 1
+                    Count = 8
                 },
                 new Input
                 {
@@ -52,6 +45,22 @@ public class KiGPSimple
                     Min = 0,
                     Max = 255
                 },
+                new Input
+                {
+                    Name = "Slider3",
+                    Type = InputType.Slider,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255
+                },
+                new Input
+                {
+                    Name = "Slider4",
+                    Type = InputType.Slider,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255
+                }
   
             ]
         };
