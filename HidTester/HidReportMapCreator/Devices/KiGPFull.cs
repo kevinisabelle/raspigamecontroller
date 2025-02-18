@@ -33,7 +33,7 @@ public class KiGPFull
                 },
                 new Input()
                 {
-                    Name = "Rotary 1",
+                    Name = "Rotary",
                     Type = InputType.Wheel,
                     Group = "Axes",
                     Count = 4,
@@ -42,7 +42,7 @@ public class KiGPFull
                 },
                 new Input()
                 {
-                    Name = "Pot 1",
+                    Name = "Pot",
                     Type = InputType.Dial,
                     Group = "Axes",
                     Count = 4,

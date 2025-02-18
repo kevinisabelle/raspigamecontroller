@@ -4,7 +4,7 @@ using Spectre.Console;
 
 AnsiConsole.MarkupLine("[bold yellow]Hid Report Map Creator[/]");
 
-var device = new KiGPSimple().Create();
+var device = new KiGPFull().Create();
 
 var reportMap = device.ToReportMap();
 var reportPayload = device.ToReportPayload();
@@ -46,57 +46,20 @@ AnsiConsole.MarkupLine("[blue]----------------------------------[/]");
 AnsiConsole.MarkupLine("[blue]Report Payload Example (Formatted)[/]");
 AnsiConsole.MarkupLine("[blue]----------------------------------[/]");
 Console.WriteLine();
-string result = "";
-string fieldStr = "";
 
-foreach (var field in reportPayload.Fields)
-{
-    fieldStr = field.Input.Name.Substring(0, 1);
+Console.WriteLine(reportPayload.GetPayloadLine(1));
+Console.WriteLine(reportPayload.GetPayloadLine(2));
 
-    if (field.Index == -1)
-    {
-        fieldStr = "_";
-    }
-    
-    var numberOfOccurences = field.BitSize;
-    
-    // Repeat the full field string the number of times it occurs
-    result += new string(Enumerable.Range(0, numberOfOccurences).SelectMany(i => fieldStr).ToArray());
-    
-    if (field.Padding > 0)
-    {
-        // Print the padding character the number of times it occurs
-        result += new string(Enumerable.Range(0, field.Padding).SelectMany(i => "_".ToCharArray()).ToArray());
-    }
-}
 
-result = string.Join(" ", Enumerable.Range(0, result.Length / 8).Select(i => result.Substring(i * 8, 8)));
 
-Console.WriteLine(result);
-result = "";
-foreach (var field in reportPayload.Fields)
-{
-    fieldStr = (field.Index+1).ToString();
+Console.WriteLine();
+AnsiConsole.MarkupLine("[blue]------------[/]");
+AnsiConsole.MarkupLine("[blue]Python class[/]");
+AnsiConsole.MarkupLine("[blue]------------[/]");
+Console.WriteLine();
 
-    if (field.Index == -1)
-    {
-        fieldStr = "_";
-    }
-    
-    var numberOfOccurences = field.BitSize;
-    
-    // Repeat the full field string the number of times it occurs
-    result += new string(Enumerable.Range(0, numberOfOccurences).SelectMany(i => fieldStr).ToArray());
-    
-    if (field.Padding > 0)
-    {
-        // Print the padding character the number of times it occurs
-        result += new string(Enumerable.Range(0, field.Padding).SelectMany(i => "_".ToCharArray()).ToArray());
-    }
-}
-
-result = string.Join(" ", Enumerable.Range(0, result.Length / 8).Select(i => result.Substring(i * 8, 8)));
-
-Console.WriteLine(result);
+Console.WriteLine(reportPayload.GeneratePythonClassCode());
+Console.WriteLine();
+Console.WriteLine(reportMap.GeneratePythonGetReportMapFunction(reportMap));
 
 Console.ReadLine();

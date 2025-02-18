@@ -10,7 +10,7 @@ from BluezImpl import (
     InvalidArgsException,
     Service,
 )
-from HidGamepadReport import GamepadDefinition
+from GamepadValues import GamepadValues1
 
 class GamePadAdvertisment(Advertisement):
     def __init__(self, bus, index):
@@ -21,14 +21,14 @@ class GamePadAdvertisment(Advertisement):
         self.include_tx_power = True
 
 class ReportMapChrc(Characteristic):
-    def __init__(self, bus, index, service, gamepad_values : GamepadDefinition):
+    def __init__(self, bus, index, service, gamepad_values : GamepadValues1):
         Characteristic.__init__(self, bus, index, 
                                 Constants.GATT_REPORT_MAP_UUID, 
                                 ['read'], service)
         self.gamepad_values = gamepad_values
         
     def ReadValue(self, options):
-        reportMap = self.gamepad_values.get_report_map_bytes()
+        reportMap = self.gamepad_values.get_report_map()
         print("Report Map read handler called, Hex: ", " ".join(f"{b:02X}" for b in reportMap))
         return reportMap
 
@@ -69,7 +69,7 @@ class ReportReferenceDesc(Descriptor):
         return self.value
 
 class ReportChrc(Characteristic):
-    def __init__(self, bus, index, service, gamepad_values : GamepadDefinition):
+    def __init__(self, bus, index, service, gamepad_values : GamepadValues1):
         Characteristic.__init__(self, bus, index, 
                                 Constants.GATT_REPORT_UUID, 
                                 ['read', 'notify', 'write-without-response'], service)
@@ -80,10 +80,10 @@ class ReportChrc(Characteristic):
         self.gamepad_values = gamepad_values
 
     def ReadValue(self, options):
-        report = self.gamepad_values.get_report_bytes()
+        report = self.gamepad_values.get_report()
         print("Report read handler called, Hex: ", " ".join(f"{b:02X}" for b in report))
 
-        return self.gamepad_values.get_report_bytes()
+        return report
     
     def StartNotify(self):
         print("Notification started")
@@ -98,7 +98,7 @@ class ReportChrc(Characteristic):
     def send_notification(self):
         if not self.notifying:
             return False
-        value_list = self.gamepad_values.get_report_bytes()  # e.g. [0x00, 0x23, 0x54, 0x76]
+        value_list = self.gamepad_values.get_report()  # e.g. [0x00, 0x23, 0x54, 0x76]
         print("Sending notification with values. Hex: ", " ".join(f"{b:02X}" for b in value_list))
         
         # Convert to a dbus Array of bytes
@@ -142,7 +142,7 @@ class HidControlPointChrc(Characteristic):
         print("Value:", value)
         
 class HidGattService(Service):
-    def __init__(self, bus, index, gamepad_values : GamepadDefinition):
+    def __init__(self, bus, index, gamepad_values : GamepadValues1):
         Service.__init__(self, bus, index, Constants.GATT_SERVICE_HID_UUID, True)
         self.add_characteristic(ReportMapChrc(bus, 0, self, gamepad_values))
         self.add_characteristic(ReportChrc(bus, 1, self, gamepad_values))
@@ -194,7 +194,7 @@ class Application(dbus.service.Object):
     """
     org.bluez.GattApplication1 interface implementation
     """
-    def __init__(self, bus, gamepad_values : GamepadDefinition):
+    def __init__(self, bus, gamepad_values : GamepadValues1):
         self.path = '/'
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
