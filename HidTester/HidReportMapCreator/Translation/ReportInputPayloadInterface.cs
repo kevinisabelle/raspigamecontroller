@@ -55,7 +55,7 @@ public class ReportInputPayloadInterface
         // Only non-padding fields (Index != -1) become parameters.
         var initParams = string.Join(", ", Fields
             .Where(f => f.Index != -1 && f.BitSize > 0)
-            .Select(f => $"{f.Input.Name}{f.Index}"));
+            .Select(f => $"{f.Input.Name}{f.Index}=0"));
         sb.AppendLine($"    def __init__(self, {initParams}):");
 
         // For non-padding fields, assign with proper bitmask.
@@ -89,7 +89,7 @@ public class ReportInputPayloadInterface
         // First, calculate total bits.
         int totalBits = Fields.Sum(f => (f.Index != -1 ? f.BitSize : 0) + f.Padding);
         int totalBytes = (totalBits + 7) / 8;
-        sb.AppendLine("    def to_bytes(self):");
+        sb.AppendLine("    def get_report(self):");
         sb.AppendLine("        total = 0");
 
         // Reset padding counter for use in to_bytes.
@@ -104,7 +104,7 @@ public class ReportInputPayloadInterface
             else if (field.Index == -1)
             {
                 // Dedicated padding field: value is always 0.
-                sb.AppendLine($"        total = total << {field.Padding}  # Padding field padding{paddingCount}");
+                sb.AppendLine($"        total = total << {field.BitSize}  # Padding field padding{paddingCount}");
                 paddingCount++;
                 continue;
             }
@@ -115,7 +115,13 @@ public class ReportInputPayloadInterface
                 sb.AppendLine($"        total = total << {field.Padding}  # Field-specific padding");
             }
         }
-        sb.AppendLine($"        return total.to_bytes({totalBytes}, byteorder='big')");
+
+        // # sb.AppendLine($"        total = total << {ReportId} # Report ID"); 
+        
+        sb.AppendLine($"        result = total.to_bytes({totalBytes}, byteorder='big')");
+        
+        // Prepend the Report ID to the result.
+        sb.AppendLine($"        return bytes([0x{ReportId:X2}] + list(result))");
 
         return sb.ToString();
     }

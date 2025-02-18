@@ -14,6 +14,7 @@ def main():
 
     # Initialiser la boucle principale de GLib pour dbus
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    
     print("Starting GamepadKi...")
     bus = dbus.SystemBus()
 
@@ -29,7 +30,8 @@ def main():
     register_advertisement(bus, advertisement)
 
     # Print the report map bytes for debugging in hex format
-    print("Report Map Bytes:", " ".join(f"{b:02X}" for b in gamepadDef.get_report_map()))
+    reportMap = gamepadDef.get_report_map()
+    print("Report Map Bytes:", " ".join(f"{b:02X}" for b in reportMap))
 
     gamepadUpdater = GamepadUpdater(gamepadDef, app)
     gamepadUpdater.start()

@@ -153,8 +153,8 @@ public static class DeviceExtensions
             
             instructions.Add(new Instruction
             {
-                Comment = $"Padding (Constant, Array, Absolute)",
-                Data = [HidReportField.INPUT, 0x00],
+                Comment = $"Padding (Constant)",
+                Data = [HidReportField.INPUT, IOSettings.DATA_CONSTANT & 0xFF],
             });
         }
 

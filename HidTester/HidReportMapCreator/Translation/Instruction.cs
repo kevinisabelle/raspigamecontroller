@@ -30,7 +30,7 @@ public class ReportMap
     public string GeneratePythonGetReportMapFunction(ReportMap reportMap)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("    def get_report_map():");
+        sb.AppendLine("    def get_report_map(self):");
         sb.AppendLine("        return bytes([");
     
         foreach (var instruction in reportMap.Instructions)

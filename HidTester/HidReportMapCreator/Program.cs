@@ -4,7 +4,7 @@ using Spectre.Console;
 
 AnsiConsole.MarkupLine("[bold yellow]Hid Report Map Creator[/]");
 
-var device = new KiGPFull().Create();
+var device = new KiGPSimple().Create();
 
 var reportMap = device.ToReportMap();
 var reportPayload = device.ToReportPayload();
