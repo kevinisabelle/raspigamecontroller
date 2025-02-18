@@ -6,7 +6,7 @@ import random
 from Hardware import read_joystick, read_slider, read_rotary, read_pot, read_button
 
 class GamepadUpdater:
-    def __init__(self, gamepad_def : GamepadValues1, app: Application, poll_interval=1):
+    def __init__(self, gamepad_def : GamepadValues1, app: Application, poll_interval=0.05):
         """
         Initialize the updater with a GamepadDefinition instance.
         
