@@ -10,7 +10,6 @@
 ## Current Issues:
 
 - Buttons not working
-- 0 to 255 axis are left shift by 127
 - Reconnection not working
 - Need to create a service to start when the Pi starts.
 - Packing axies don't work in Windows
