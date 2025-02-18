@@ -121,6 +121,18 @@ public static class TranslationExtensions
         
         instructions.Add(new Instruction
         {
+            Comment = $"Physical Minimum ({input.Min})",
+            Data = [HidReportField.PHYSICAL_MINIMUM, (byte)(input.Min)],
+        });
+        
+        instructions.Add(new Instruction
+        {
+            Comment = $"Physical Maximum ({input.Max})",
+            Data = [HidReportField.PHYSICAL_MAXIMUM, (byte)(input.Max)],
+        });
+        
+        instructions.Add(new Instruction
+        {
             Comment = $"Report Size ({input.GetValueBitSize()})",
             Data = [HidReportField.REPORT_SIZE, (byte)input.GetValueBitSize()],
         });

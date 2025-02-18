@@ -1,5 +1,6 @@
 import random
 import spidev
+import math
 
 def read_joystick(index):
     return 0
@@ -31,7 +32,14 @@ def read_mcp3008(channel, spi):
     spi.close()  # Close SPI to release CS0
 
     result = ((adc[1] & 3) << 8) + adc[2]  # Combine the result bytes
-
+    
     # resize the value from 0-1023 to 0-255
+    # result = adc_log_to_linear(result)
     result = int(result / 4)
     return result
+
+def adc_log_to_linear(adc_value):
+    # Invert the logarithmic mapping:
+    linear_value = math.exp((adc_value / 1023) * math.log(256)) - 1
+    # Clamp the value to integer range 0-255
+    return int(round(linear_value))
