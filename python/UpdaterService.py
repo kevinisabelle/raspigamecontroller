@@ -61,7 +61,7 @@ class GamepadUpdater:
         hasChanged |= self._update_control(lambda: self.gamepad_def.Slider0, self.gamepad_def.set_Slider0, read_slider, 0)
         hasChanged |= self._update_control(lambda: self.gamepad_def.Slider20, self.gamepad_def.set_Slider20, read_slider, 1)
         hasChanged |= self._update_control(lambda: self.gamepad_def.Slider30, self.gamepad_def.set_Slider30, read_slider, 2)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Slider40, self.gamepad_def.set_Slider40, read_slider, 3)
+        # hasChanged |= self._update_control(lambda: self.gamepad_def.Slider40, self.gamepad_def.set_Slider40, read_slider, 3)
 
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary0, self.gamepad_def.set_Rotary0, read_rotary, 0)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary1, self.gamepad_def.set_Rotary1, read_rotary, 1)

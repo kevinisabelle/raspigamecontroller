@@ -1,5 +1,5 @@
 class GamepadValues1:
-    def __init__(self, Btn10=0, Btn11=0, Btn12=0, Btn13=0, Btn14=0, Btn15=0, Btn16=0, Btn17=0, Slider0=0, Slider20=0, Slider30=0, Slider40=0):
+    def __init__(self, Btn10=0, Btn11=0, Btn12=0, Btn13=0, Btn14=0, Btn15=0, Btn16=0, Btn17=0, Slider0=0, Slider20=0, Slider30=0):
         self.Btn10 = Btn10 & 0x1
         self.Btn11 = Btn11 & 0x1
         self.Btn12 = Btn12 & 0x1
@@ -11,7 +11,6 @@ class GamepadValues1:
         self.Slider0 = Slider0 & 0xFF
         self.Slider20 = Slider20 & 0xFF
         self.Slider30 = Slider30 & 0xFF
-        self.Slider40 = Slider40 & 0xFF
 
     def set_Btn10(self, value):
         self.Btn10 = value & 0x1
@@ -46,9 +45,6 @@ class GamepadValues1:
     def set_Slider30(self, value):
         self.Slider30 = value & 0xFF
 
-    def set_Slider40(self, value):
-        self.Slider40 = value & 0xFF
-
     def get_report(self):
         total = 0
         total = (total << 1) | self.Btn10
@@ -62,8 +58,7 @@ class GamepadValues1:
         total = (total << 8) | self.Slider0
         total = (total << 8) | self.Slider20
         total = (total << 8) | self.Slider30
-        total = (total << 8) | self.Slider40
-        result = total.to_bytes(5, byteorder='big')
+        result = total.to_bytes(4, byteorder='big')
         return bytes([0x01] + list(result))
 
 
@@ -80,15 +75,6 @@ class GamepadValues1:
             0x25, 0x01,   # Logical Maximum (1)
             0x75, 0x01,   # Report Size (1)
             0x95, 0x08,   # Report Count (8)
-            0x81, 0x02,   # Input (00000010)
-            0x05, 0x01,   # Usage Page (Generic Desktop Controls)
-            0x09, 0x36,   # Usage (Slider)
-            0x19, 0x01,   # Usage Minimum (1)
-            0x29, 0x01,   # Usage Maximum (1)
-            0x15, 0x00,   # Logical Minimum (0)
-            0x25, 0xFF,   # Logical Maximum (255)
-            0x75, 0x08,   # Report Size (8)
-            0x95, 0x01,   # Report Count (1)
             0x81, 0x02,   # Input (00000010)
             0x05, 0x01,   # Usage Page (Generic Desktop Controls)
             0x09, 0x36,   # Usage (Slider)

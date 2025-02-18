@@ -13,15 +13,6 @@ public class KiGPSimple
             Type = DeviceType.Gamepad,
             Inputs =
             [
-                /*new Input
-                {
-                    Name = "Joystick",
-                    Type = InputType.Joystick,
-                    Group = "Axes",
-                    Min = -127,
-                    Max = 127,
-                    Count = 1
-                },*/
                 new Input
                 {
                     Name = "Btn1",
@@ -53,15 +44,6 @@ public class KiGPSimple
                     Min = 0,
                     Max = 255
                 },
-                new Input
-                {
-                    Name = "Slider4",
-                    Type = InputType.Slider,
-                    Count = 1,
-                    Min = 0,
-                    Max = 255
-                }
-  
             ]
         };
 
