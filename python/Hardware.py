@@ -1,6 +1,15 @@
 import random
 import spidev
 import math
+import RPi.GPIO as GPIO
+
+buttonsGPIO = [22, 23, 24, 25, 26, 27]
+buttonsGPIO.reverse()
+
+def init_hardware():
+    GPIO.setmode(GPIO.BCM)
+    for button in buttonsGPIO:
+        GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def read_joystick(index):
     return 0
@@ -19,7 +28,9 @@ def read_pot(index):
     return 0
 
 def read_button(index):
-    return 0
+    # Read the button value from the gpio state (0 = pressed, 1 = released)
+    value = GPIO.input(buttonsGPIO[index]) == 0
+    return value
 
 def read_mcp3008(channel, spi):
     """Read analog value from a specified MCP3008 channel (0-7)."""

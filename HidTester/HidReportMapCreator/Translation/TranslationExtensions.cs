@@ -118,19 +118,22 @@ public static class TranslationExtensions
             Comment = $"Logical Maximum ({input.Max})",
             Data = [HidReportField.LOGICAL_MAXIMUM, (byte)(input.Max)],
         });
-        
-        instructions.Add(new Instruction
+
+        if (input.Type != InputType.Button)
         {
-            Comment = $"Physical Minimum ({input.Min})",
-            Data = [HidReportField.PHYSICAL_MINIMUM, (byte)(input.Min)],
-        });
-        
-        instructions.Add(new Instruction
-        {
-            Comment = $"Physical Maximum ({input.Max})",
-            Data = [HidReportField.PHYSICAL_MAXIMUM, (byte)(input.Max)],
-        });
-        
+            instructions.Add(new Instruction
+            {
+                Comment = $"Physical Minimum ({input.Min})",
+                Data = [HidReportField.PHYSICAL_MINIMUM, (byte)(input.Min)],
+            });
+
+            instructions.Add(new Instruction
+            {
+                Comment = $"Physical Maximum ({input.Max})",
+                Data = [HidReportField.PHYSICAL_MAXIMUM, (byte)(input.Max)],
+            });
+        }
+
         instructions.Add(new Instruction
         {
             Comment = $"Report Size ({input.GetValueBitSize()})",
@@ -194,6 +197,18 @@ public static class TranslationExtensions
             
             var usages = input.Type.GetUsages();
             
+            if (input.GetReportPaddingSize() > 0)
+            {
+                payload.Fields.Add(new Field()
+                {
+                    Comment = $"_ {input.Name} {input.GetReportPaddingSize()} Padding",
+                    BitSize = input.GetReportPaddingSize(),
+                    Padding = 0,
+                    Index = -1,
+                    Input = input
+                });
+            }
+            
             for (var i = 0; i < totalUsages; i++)
             {
                 var usage = usages.ElementAtOrDefault(i);
@@ -209,18 +224,6 @@ public static class TranslationExtensions
                     BitSize = input.GetValueBitSize(),
                     Padding = 0,
                     Index = i,
-                    Input = input
-                });
-            }
-            
-            if (input.GetReportPaddingSize() > 0)
-            {
-                payload.Fields.Add(new Field()
-                {
-                    Comment = $"_ {input.Name} {input.GetReportPaddingSize()} Padding",
-                    BitSize = input.GetReportPaddingSize(),
-                    Padding = 0,
-                    Index = -1,
                     Input = input
                 });
             }

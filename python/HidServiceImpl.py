@@ -99,7 +99,7 @@ class ReportChrc(Characteristic):
         if not self.notifying:
             return False
         value_list = self.gamepad_values.get_report()  # e.g. [0x00, 0x23, 0x54, 0x76]
-        print("Sending notification with values. Hex: ", " ".join(f"{b:02X}" for b in value_list))
+        # print("Sending notification with values. Hex: ", " ".join(f"{b:02X}" for b in value_list))
         
         # Convert to a dbus Array of bytes
         value_dbus = dbus.Array(value_list, signature='y')
@@ -215,8 +215,8 @@ class PnpIdChrc(Characteristic):
 
         pnp_id = [
             0x02,      # Vendor ID Source (2 => USB-IF)
-            0x34, 0x12,  # Vendor ID (0x1234, little-endian)
-            0x78, 0x56,  # Product ID (0x5678, little-endian)
+            0x6D, 0x04,  # Vendor ID (0x1234, little-endian) 046D = Logitech
+            0x78, 0x56,  # Product ID (0x5678, little-endian) 
             0x00, 0x01   # Product Version (0x0100, little-endian)
         ]
         return pnp_id
@@ -228,7 +228,20 @@ class DeviceInfoService(Service):
         self.add_characteristic(ModelNumberChrc(bus, 1, self))
         self.add_characteristic(SerialNumberChrc(bus, 2, self))
         self.add_characteristic(HardwareRevisionChrc(bus, 3, self))
-        # self.add_characteristic(PnpIdChrc(bus, 4, self))
+        self.add_characteristic(PnpIdChrc(bus, 4, self))
+
+class BatteryLevelChrc(Characteristic):
+    def __init__(self, bus, index, service):
+        Characteristic.__init__(self, bus, index, '2a19', ['read'], service)
+        
+    def ReadValue(self, options):
+        print("Battery Level read handler called")
+        return [0x64] # 100% battery level
+    
+class BatteryService(Service):
+    def __init__(self, bus, index):
+        Service.__init__(self, bus, index, Constants.BATTERY_SERVICE_UUID, True) # Battery Service (0x180f)
+        self.add_characteristic(BatteryLevelChrc(bus, 0, self))
 
 class Application(dbus.service.Object):
     """
@@ -240,6 +253,7 @@ class Application(dbus.service.Object):
         dbus.service.Object.__init__(self, bus, self.path)
         self.add_service(HidGattService(bus, 0, gamepad_values))
         self.add_service(DeviceInfoService(bus, 1))
+        self.add_service(BatteryService(bus, 2))
        
     def get_path(self):
         return dbus.ObjectPath(self.path)

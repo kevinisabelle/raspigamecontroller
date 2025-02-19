@@ -7,8 +7,11 @@ from BluezImpl import Agent, register_advertisement, register_agent, register_ap
 from HidServiceImpl import GamePadAdvertisment, Application
 from UpdaterService import GamepadUpdater
 from GamepadValues import GamepadValues1
+from Hardware import init_hardware
 
 def main():
+
+    init_hardware()
 
     gamepadDef = GamepadValues1()
 

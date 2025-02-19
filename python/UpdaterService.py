@@ -79,7 +79,7 @@ class GamepadUpdater:
         hasChanged |= self._update_control(lambda: self.gamepad_def.Btn13, self.gamepad_def.set_Btn13, read_button, 3)
         hasChanged |= self._update_control(lambda: self.gamepad_def.Btn14, self.gamepad_def.set_Btn14, read_button, 4)
         hasChanged |= self._update_control(lambda: self.gamepad_def.Btn15, self.gamepad_def.set_Btn15, read_button, 5)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn16, self.gamepad_def.set_Btn16, read_button, 6)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn17, self.gamepad_def.set_Btn17, read_button, 7)
+        # hasChanged |= self._update_control(lambda: self.gamepad_def.Btn16, self.gamepad_def.set_Btn16, read_button, 6)
+        # hasChanged |= self._update_control(lambda: self.gamepad_def.Btn17, self.gamepad_def.set_Btn17, read_button, 7)
 
         return hasChanged
