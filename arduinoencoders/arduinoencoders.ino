@@ -5,8 +5,8 @@
 // Définir les encodeurs (broches à ajuster selon votre montage)
 RotaryEncoder encoder1(2, 3, RotaryEncoder::LatchMode::FOUR3);
 RotaryEncoder encoder2(4, 5, RotaryEncoder::LatchMode::FOUR3);
-RotaryEncoder encoder3(6, 7, RotaryEncoder::LatchMode::FOUR3);
-RotaryEncoder encoder4(8, 9, RotaryEncoder::LatchMode::FOUR3);
+// RotaryEncoder encoder3(6, 7, RotaryEncoder::LatchMode::FOUR3);
+// RotaryEncoder encoder4(8, 9, RotaryEncoder::LatchMode::FOUR3);
 
 // Initialiser l'écran LCD I2C (adresse typique: 0x27 ou 0x3F)
 // LiquidCrystal_I2C lcd(0x27, 16, 2); // Adresse 0x27, écran 16x2
@@ -28,18 +28,18 @@ void setup() {
   pinMode(3, INPUT_PULLUP);
   pinMode(4, INPUT_PULLUP);
   pinMode(5, INPUT_PULLUP);
-  pinMode(6, INPUT_PULLUP);
-  pinMode(7, INPUT_PULLUP);
-  pinMode(8, INPUT_PULLUP);
-  pinMode(9, INPUT_PULLUP);
+  // pinMode(6, INPUT_PULLUP);
+  // pinMode(7, INPUT_PULLUP);
+  // pinMode(8, INPUT_PULLUP);
+  // pinMode(9, INPUT_PULLUP);
 }
 
 void loop() {
   // Mettre à jour tous les encodeurs
   encoder1.tick();
   encoder2.tick();
-  encoder3.tick();
-  encoder4.tick();
+  // encoder3.tick();
+  // encoder4.tick();
 
   // Lire la position actuelle de l'encodeur 3
   /*long pos3 = encoder3.getPosition();
@@ -59,11 +59,12 @@ void requestEvent() {
 
   long pos1 = encoder1.getPosition();
   long pos2 = encoder2.getPosition();
-  long pos3 = encoder3.getPosition();
-  long pos4 = encoder4.getPosition();
-
-  Wire.write((uint8_t*)&pos1, sizeof(long));
-  Wire.write((uint8_t*)&pos2, sizeof(long));
-  Wire.write((uint8_t*)&pos3, sizeof(long));
-  Wire.write((uint8_t*)&pos4, sizeof(long));
+  // long pos3 = encoder3.getPosition();
+  // long pos4 = encoder4.getPosition();
+  uint8_t wrappedPos1 = (uint8_t)(encoder1.getPosition() & 0xFF);
+  uint8_t wrappedPos2 = (uint8_t)(encoder2.getPosition() & 0xFF);
+  Wire.write(wrappedPos1);
+  Wire.write(wrappedPos2);
+  // Wire.write((uint8_t*)&pos3, sizeof(long));
+  // Wire.write((uint8_t*)&pos4, sizeof(long));
 }

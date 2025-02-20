@@ -1,10 +1,16 @@
-import random
 import spidev
 import math
 import RPi.GPIO as GPIO
+import smbus2
+import time
+import struct
 
 buttonsGPIO = [22, 23, 24, 25, 26, 27]
 buttonsGPIO.reverse()
+
+# Initialize I2C bus
+bus = smbus2.SMBus(1)
+print("I2C bus initialized")
 
 def init_hardware():
     GPIO.setmode(GPIO.BCM)
@@ -22,7 +28,8 @@ def read_slider(index):
     return value
 
 def read_rotary(index):
-    return 0
+    encoders = read_encoders()
+    return encoders[index]
 
 def read_pot(index):
     return 0
@@ -54,3 +61,23 @@ def adc_log_to_linear(adc_value):
     linear_value = math.exp((adc_value / 1023) * math.log(256)) - 1
     # Clamp the value to integer range 0-255
     return int(round(linear_value))
+
+
+ARDUINO_I2C_ADDRESS = 0x08
+
+# Number of encoders
+NUM_ENCODERS = 2
+
+def read_encoders():
+    try:
+        # Request 4 long integers (4 bytes each) from Arduino
+        raw_data = bus.read_i2c_block_data(ARDUINO_I2C_ADDRESS, 0, NUM_ENCODERS)
+        
+        raw_bytes = bytes(raw_data)
+        # print (raw_bytes)
+        encoder_values = struct.unpack('<BB', raw_bytes)
+        # print(encoder_values)
+        return encoder_values
+    except Exception as e:
+        print(f"Error reading from Arduino: {e}")
+        return None

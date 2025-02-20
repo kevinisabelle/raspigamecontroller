@@ -59,12 +59,12 @@ class GamepadUpdater:
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Joystick3, self.gamepad_def.set_Joystick3, read_joystick, 3)
 
         hasChanged |= self._update_control(lambda: self.gamepad_def.Slider0, self.gamepad_def.set_Slider0, read_slider, 0)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Slider20, self.gamepad_def.set_Slider20, read_slider, 1)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Slider30, self.gamepad_def.set_Slider30, read_slider, 2)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Slider20, self.gamepad_def.set_Slider20, read_slider, 1)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Slider30, self.gamepad_def.set_Slider30, read_slider, 2)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Slider40, self.gamepad_def.set_Slider40, read_slider, 3)
 
-        # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary0, self.gamepad_def.set_Rotary0, read_rotary, 0)
-        # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary1, self.gamepad_def.set_Rotary1, read_rotary, 1)
+        hasChanged |= self._update_control(lambda: self.gamepad_def.Dial10, self.gamepad_def.set_Dial10, read_rotary, 0)
+        hasChanged |= self._update_control(lambda: self.gamepad_def.Dial20, self.gamepad_def.set_Dial20, read_rotary, 1)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary2, self.gamepad_def.set_Rotary2, read_rotary, 2)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Rotary3, self.gamepad_def.set_Rotary3, read_rotary, 3)
 
@@ -75,10 +75,10 @@ class GamepadUpdater:
 
         hasChanged |= self._update_control(lambda: self.gamepad_def.Btn10, self.gamepad_def.set_Btn10, read_button, 0)
         hasChanged |= self._update_control(lambda: self.gamepad_def.Btn11, self.gamepad_def.set_Btn11, read_button, 1)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn12, self.gamepad_def.set_Btn12, read_button, 2)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn13, self.gamepad_def.set_Btn13, read_button, 3)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn14, self.gamepad_def.set_Btn14, read_button, 4)
-        hasChanged |= self._update_control(lambda: self.gamepad_def.Btn15, self.gamepad_def.set_Btn15, read_button, 5)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Btn12, self.gamepad_def.set_Btn12, read_button, 2)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Btn13, self.gamepad_def.set_Btn13, read_button, 3)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Btn14, self.gamepad_def.set_Btn14, read_button, 4)
+        #hasChanged |= self._update_control(lambda: self.gamepad_def.Btn15, self.gamepad_def.set_Btn15, read_button, 5)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Btn16, self.gamepad_def.set_Btn16, read_button, 6)
         # hasChanged |= self._update_control(lambda: self.gamepad_def.Btn17, self.gamepad_def.set_Btn17, read_button, 7)
 

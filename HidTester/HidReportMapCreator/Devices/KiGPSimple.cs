@@ -18,7 +18,7 @@ public class KiGPSimple
                     Name = "Btn1",
                     Type = InputType.Button,
                     Group = "Buttons",
-                    Count = 6
+                    Count = 2
                 },
                 new Input
                 {
@@ -30,16 +30,16 @@ public class KiGPSimple
                 },
                 new Input
                 {
-                    Name = "Slider2",
-                    Type = InputType.Slider,
+                    Name = "Dial1",
+                    Type = InputType.Dial,
                     Count = 1,
                     Min = 0,
                     Max = 255
                 },
                 new Input
                 {
-                    Name = "Slider3",
-                    Type = InputType.Slider,
+                    Name = "Dial2",
+                    Type = InputType.Dial,
                     Count = 1,
                     Min = 0,
                     Max = 255
