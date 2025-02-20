@@ -6,7 +6,7 @@ import time
 import struct
 
 buttonsGPIO = [22, 23, 24, 25, 26, 27]
-buttonsGPIO.reverse()
+# buttonsGPIO.reverse()
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -27,9 +27,17 @@ def read_slider(index):
     value = read_mcp3008(index, spi)
     return value
 
+encoderLastValues = [0, 0]
+
 def read_rotary(index):
     encoders = read_encoders()
-    return encoders[index]
+    delta = 0
+
+    if encoders is not None:
+        delta = encoders[index] - encoderLastValues[index]
+        encoderLastValues[index] = encoders[index]
+
+    return delta
 
 def read_pot(index):
     return 0

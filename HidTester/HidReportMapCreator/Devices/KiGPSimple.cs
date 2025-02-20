@@ -33,16 +33,16 @@ public class KiGPSimple
                     Name = "Dial1",
                     Type = InputType.Dial,
                     Count = 1,
-                    Min = 0,
-                    Max = 255
+                    Min = -127,
+                    Max = 127
                 },
                 new Input
                 {
                     Name = "Dial2",
                     Type = InputType.Dial,
                     Count = 1,
-                    Min = 0,
-                    Max = 255
+                    Min = -127,
+                    Max = 127
                 },
             ]
         };
