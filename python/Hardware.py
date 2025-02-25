@@ -5,7 +5,7 @@ import smbus2
 import time
 import struct
 
-buttonsGPIO = [22, 23, 24, 25, 26, 27]
+buttonsGPIO = [22, 23, 24, 25, 26, 27, 12, 6]
 # buttonsGPIO.reverse()
 
 # Initialize I2C bus
@@ -19,6 +19,13 @@ def init_hardware():
 
 def read_joystick(index):
     return 0
+
+def read_slider_middle(index):
+    # Read the slider value from the gpio
+    spi = spidev.SpiDev()
+
+    value = (read_mcp3008(index, spi) - 128) & 0xFF
+    return value
 
 def read_slider(index):
     # Read the slider value from the gpio

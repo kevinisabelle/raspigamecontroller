@@ -17,7 +17,6 @@ public class KiGPSimple
                 {
                     Name = "Btn1",
                     Type = InputType.Button,
-                    Group = "Buttons",
                     Count = 2
                 },
                 new Input

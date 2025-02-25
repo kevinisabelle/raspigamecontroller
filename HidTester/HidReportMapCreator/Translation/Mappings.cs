@@ -9,6 +9,26 @@ namespace HidReportMapCreator.Translation;
 /// </summary>
 public static class Mappings
 {
+    public static ushort GetUsage(this AxisUsage type)
+    {
+        return type switch
+        {
+            AxisUsage.X => HidUsagePageGenericDesktopControls.X,
+            AxisUsage.Y => HidUsagePageGenericDesktopControls.Y,
+            AxisUsage.Z => HidUsagePageGenericDesktopControls.Z,
+            AxisUsage.Rx => HidUsagePageGenericDesktopControls.Rx,
+            AxisUsage.Ry => HidUsagePageGenericDesktopControls.Ry,
+            AxisUsage.Rz => HidUsagePageGenericDesktopControls.Rz,
+            AxisUsage.Vx => HidUsagePageGenericDesktopControls.Vx,
+            AxisUsage.Vy => HidUsagePageGenericDesktopControls.Vy,
+            AxisUsage.Vz => HidUsagePageGenericDesktopControls.Vz,
+            AxisUsage.Vbrx => HidUsagePageGenericDesktopControls.Vbrx,
+            AxisUsage.Vbry => HidUsagePageGenericDesktopControls.Vbry,
+            AxisUsage.Vbrz => HidUsagePageGenericDesktopControls.Vbrz,
+            _ => HidUsagePageGenericDesktopControls.X
+        };
+    }
+    
     public static int GetUsage(this DeviceType type)
     {
         return type switch
@@ -29,6 +49,7 @@ public static class Mappings
             InputType.Dial => HidUsagePage.GenericDesktopControls,
             InputType.Wheel => HidUsagePage.GenericDesktopControls,
             InputType.Joystick => HidUsagePage.GenericDesktopControls,
+            InputType.Axis => HidUsagePage.GenericDesktopControls,
             _ => HidUsagePage.Undefined
         };
     }
@@ -43,6 +64,7 @@ public static class Mappings
             InputType.Dial => IOSettings.VARIABLE | IOSettings.RELATIVE,
             InputType.Wheel => IOSettings.VARIABLE,
             InputType.HatSwitch => IOSettings.VARIABLE,
+            InputType.Axis => IOSettings.VARIABLE,
             _ => 0x00
         };
     }
@@ -62,6 +84,16 @@ public static class Mappings
             InputType.Dial => new[] { HidUsagePageGenericDesktopControls.Dial },
             InputType.Wheel => new[] { HidUsagePageGenericDesktopControls.Wheel },
             InputType.HatSwitch => new[] { HidUsagePageGenericDesktopControls.HatSwitch },
+            InputType.Axis => new[]
+            {
+                HidUsagePageGenericDesktopControls.X, HidUsagePageGenericDesktopControls.Y,
+                HidUsagePageGenericDesktopControls.Z, HidUsagePageGenericDesktopControls.Rx,
+                HidUsagePageGenericDesktopControls.Ry, HidUsagePageGenericDesktopControls.Rz,
+                HidUsagePageGenericDesktopControls.Vx, HidUsagePageGenericDesktopControls.Vy,
+                HidUsagePageGenericDesktopControls.Vz, HidUsagePageGenericDesktopControls.Vbrx,
+                HidUsagePageGenericDesktopControls.Vbry, HidUsagePageGenericDesktopControls.Vbrz,
+                HidUsagePageGenericDesktopControls.Vno
+            },
             _ => new ushort[] { }
         };
     }

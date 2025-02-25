@@ -6,6 +6,8 @@ public class Input
     
     public InputType Type { get; set; }
     
+    public AxisUsage? AxisUsage { get; set; }
+    
     public string? Group { get; set; }
 
     public int Min { get; set; } = 0;

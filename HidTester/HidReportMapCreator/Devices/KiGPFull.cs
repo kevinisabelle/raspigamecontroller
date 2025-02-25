@@ -8,57 +8,92 @@ public class KiGPFull
     {
         var device = new Device
         {
-            Name = "KiGP",
+            Name = "KiGPFull",
             Manufacturer = "KiGP",
             Type = DeviceType.Gamepad,
-            Inputs = new List<Input>
-            {
-                new Input()
+            Inputs =
+            [
+                new Input
                 {
-                    Name = "Joystick",
-                    Type = InputType.Joystick,
-                    Group = "Axes",
-                    Min = -127,
-                    Max = 127,
-                    Count = 2
-                },  
-                new Input()
+                    Name = "Btn1",
+                    Type = InputType.Button,
+                    Count = 8
+                },
+                new Input
                 {
                     Name = "Slider",
                     Type = InputType.Slider,
-                    Group = "Axes",
-                    Count = 4,
-                    Min = 0,
-                    Max = 255
-                },
-                new Input()
-                {
-                    Name = "Rotary",
-                    Type = InputType.Wheel,
-                    Group = "Axes",
-                    Count = 4,
-                    Min = -127,
-                    Max = 127
-                },
-                new Input()
-                {
-                    Name = "Pot",
-                    Type = InputType.Dial,
-                    Group = "Axes",
-                    Count = 4,
+                    Count = 1,
                     Min = 0,
                     Max = 255
                 },
                 new Input
                 {
-                    Name = "Button",
-                    Type = InputType.Button,
-                    Group = "Buttons",
-                    Count = 6
-                }
-            }
-        };
+                    Name = "AxisX",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = -127,
+                    Max = 127,
+                    AxisUsage = AxisUsage.X
+                },
+                new Input
+                {
+                    Name = "AxisY",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Y
+                },
+                new Input
+                {
+                    Name = "AxisZ",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Z
+                },
+                new Input
+                {
+                    Name = "AxisRx",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Rx
+                },
+                new Input
+                {
+                    Name = "AxisRy",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Ry
+                },
+                new Input
+                {
+                    Name = "AxisRz",
+                    Type = InputType.Axis,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Rz
+                },
+                new Input
+                {
+                    Name = "AxisVx",
+                    Type = InputType.Slider,
+                    Count = 1,
+                    Min = 0,
+                    Max = 255,
+                    AxisUsage = AxisUsage.Slider
+                },
 
+            ]
+        };
+        
         return device;
     }
 }

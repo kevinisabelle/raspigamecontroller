@@ -63,34 +63,46 @@ public static class TranslationExtensions
             Comment = $"Usage Page ({Mappings.GetUsagePageName(usagePage)})",
             Data = [HidReportField.USAGE_PAGE, (byte)usagePage],
         });
-        
-        if (usesUsage)
-        {
-            if  (isSingleUsage)
-            {
-                instructions.Add(new Instruction
-                {
-                    Comment = $"Usage ({input.Type.GetUsages().First().GetUsageName()})",
-                    Data = [HidReportField.USAGE, (byte)input.Type.GetUsages().First()],
-                });
-            }
-            else
-            {
-                for (var i = 0; i < nbOfUsages; i++)
-                {
-                    var usage = input.Type.GetUsages().ElementAtOrDefault(i);
-                
-                    // Use the first usage if index out of bounds
-                    if (usage == 0)
-                    {
-                        usage = input.Type.GetUsages().First();
-                    }
 
+        if (input.AxisUsage.HasValue)
+        {
+            instructions.Add(new Instruction
+            {
+                Comment = $"Usage ({input.AxisUsage.Value.GetUsage().GetUsageName()})",
+                Data = [HidReportField.USAGE, (byte)input.AxisUsage.Value.GetUsage()],
+            });
+        }
+        else
+        {
+
+            if (usesUsage)
+            {
+                if (isSingleUsage)
+                {
                     instructions.Add(new Instruction
                     {
-                        Comment = $"Usage ({usage.GetUsageName()})",
-                        Data = [HidReportField.USAGE, (byte)usage],
+                        Comment = $"Usage ({input.Type.GetUsages().First().GetUsageName()})",
+                        Data = [HidReportField.USAGE, (byte)input.Type.GetUsages().First()],
                     });
+                }
+                else
+                {
+                    for (var i = 0; i < nbOfUsages; i++)
+                    {
+                        var usage = input.Type.GetUsages().ElementAtOrDefault(i);
+
+                        // Use the first usage if index out of bounds
+                        if (usage == 0)
+                        {
+                            usage = input.Type.GetUsages().First();
+                        }
+
+                        instructions.Add(new Instruction
+                        {
+                            Comment = $"Usage ({usage.GetUsageName()})",
+                            Data = [HidReportField.USAGE, (byte)usage],
+                        });
+                    }
                 }
             }
         }

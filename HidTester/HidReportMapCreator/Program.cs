@@ -3,7 +3,7 @@ using HidReportMapCreator.Translation;
 using Spectre.Console;
 
 // TODO: Change this class to any other device class to generate a report map and payload
-var device = new KiGPSimple().Create();
+var device = new KiGPFull().Create();
 
 AnsiConsole.MarkupLine("[bold yellow]Hid Report Map and Payload interface creator[/]");
 AnsiConsole.MarkupLine("[blue]---------------------------------------------------[/]");

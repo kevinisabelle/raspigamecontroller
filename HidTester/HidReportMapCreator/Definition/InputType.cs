@@ -35,4 +35,6 @@ public enum InputType
     /// A hat switch. A hat switch is a switch that can be in one of several positions, such as up, down, left, right, or centered.
     /// </summary>
     HatSwitch,
+    
+    Axis,
 }
