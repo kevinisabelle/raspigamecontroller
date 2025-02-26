@@ -4515,7 +4515,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Potentiometer_THT:Potentiometer_Bourns_PTA4543_Single_Slide"
+		(property "Footprint" "Potentiometer_THT:Potentiometer_Bourns_PTA6043_Single_Slide"
 			(at 49.53 54.61 0)
 			(effects
 				(font
@@ -5048,7 +5048,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Potentiometer_THT:Potentiometer_Bourns_PTA4543_Single_Slide"
+		(property "Footprint" "Potentiometer_THT:Potentiometer_Bourns_PTA6043_Single_Slide"
 			(at 49.53 45.72 0)
 			(effects
 				(font
