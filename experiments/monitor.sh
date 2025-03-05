@@ -1,1 +1,1 @@
-sudo dbus-monitor --system "interface=org.bluez.Agent1"
+sudo dbus-monitor --system "interface='org.bluez.LEAdvertisement1'"

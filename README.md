@@ -9,7 +9,6 @@
 
 ## Current Issues:
 
-- Buttons not working
 - Reconnection not working
 - Need to create a service to start when the Pi starts.
 - Packing axies don't work in Windows

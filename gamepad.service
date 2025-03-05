@@ -1,0 +1,13 @@
+[Unit]
+Description=Gamepad App Service
+After=network.target bluetooth.service
+Wants=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /var/gamepad/python/App.py
+WorkingDirectory=/var/gamepad/python
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

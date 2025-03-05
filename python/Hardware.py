@@ -5,7 +5,7 @@ import smbus2
 import time
 import struct
 
-buttonsGPIO = [22, 23, 24, 25, 26, 27, 12, 6]
+buttonsGPIO = [22, 23, 24, 25, 12, 4, 5, 6]
 # buttonsGPIO.reverse()
 
 # Initialize I2C bus

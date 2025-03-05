@@ -20,3 +20,9 @@ dotnet/GamePadBTDbus/AgentOnly/publish/
 HidTester/HidTester/obj/
 HidTester/HidReportMapCreator/obj/
 pcb/gamepadv2/gamepad-backups/
+box/assets/
+box/forpicture.blend
+box/gamepadenclosure.blend
+box/gamepadenclosure_cut.blend
+box/gamepadenclosure_cut.stl
+box/gamepadenclosure_precut.blend
