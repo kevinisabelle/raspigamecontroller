@@ -9,9 +9,7 @@
 
 ## Current Issues:
 
-- Reconnection not working
-- Need to create a service to start when the Pi starts.
-- Packing axies don't work in Windows
+- Reconnection not working automatically
 - The number of axies also seems to be limited.
 
 ## Setup

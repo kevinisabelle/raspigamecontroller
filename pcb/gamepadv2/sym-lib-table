@@ -1,4 +1,0 @@
-(sym_lib_table
-  (version 7)
-  (lib (name "projectlib")(type "KiCad")(uri "K:/dev/gamepadzig/pcb/symbols/projectlib.kicad_sym")(options "")(descr ""))
-)
