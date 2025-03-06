@@ -29,3 +29,5 @@ box/gamepadenclosure_precut.blend
 HidTools/HidTester/obj/
 pcb/kicadproj/gamepad-backups/
 HidTools/HidReportMapCreator/obj/
+c/cmake-build-debug/
+c/cmake-build-aarch64/

@@ -1,4 +1,4 @@
-#include "Hardware.h"
+#include <hardware.h>
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
 #include <stdio.h>

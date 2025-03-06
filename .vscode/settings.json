@@ -2,6 +2,9 @@
     "files.associations": {
         "*.embeddedhtml": "html",
         "coroutine": "cpp",
-        "i2clcd.h": "c"
+        "i2clcd.h": "c",
+        "regex": "cpp",
+        "xiosbase": "cpp",
+        "hardware.h": "c"
     }
 }
