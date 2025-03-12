@@ -1,18 +1,26 @@
-#ifndef AGENT_H
-#define AGENT_H
-
 #include <gio/gio.h>
+#include <string>
 
-/* Opaque type for our Agent */
-typedef struct _Agent Agent;
+class Agent {
+public:
+    Agent(GDBusConnection* connection, const std::string &objectPath);
+    ~Agent();
 
-/* Create a new Agent on the given D-Bus connection at object_path */
-Agent *agent_new(GDBusConnection *connection, const char *object_path);
+    void registerAgent();
 
-/* Register the agent on the bus */
-void agent_register(Agent *agent);
+private:
+    static const char* introspectionXml;
+    static void handleMethodCall(GDBusConnection *connection,
+                                 const gchar *sender,
+                                 const gchar *object_path,
+                                 const gchar *interface_name,
+                                 const gchar *method_name,
+                                 GVariant *parameters,
+                                 GDBusMethodInvocation *invocation,
+                                 gpointer user_data);
 
-/* Free the Agent */
-void agent_free(Agent *agent);
-
-#endif // AGENT_H
+    GDBusConnection* connection;
+    std::string objectPath;
+    guint registrationId;
+    GDBusNodeInfo* nodeInfo;
+};
