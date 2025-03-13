@@ -1,0 +1,9 @@
+﻿pub const AGENT_PATH: &str = "/com/kevinisabelle/gamepadki/agent";
+pub const ADVERT_PATH: &str = "/org/bluez/gamepadki/advertisement0";
+pub const BLUEZ_SERVICE: &str = "org.bluez";
+pub const BLUEZ_SERVICE_PATH: &str = "/org/bluez";
+pub const ADAPTER_PATH: &str = "/org/bluez/hci0"; // adjust if needed
+pub const AGENT_MANAGER_IFACE: &str = "org.bluez.AgentManager1";
+pub const DBUS_PROPERTIES_IFACE: &str = "org.freedesktop.DBus.Properties";
+pub const ADAPTER_IFACE: &str = "org.bluez.Adapter1";
+pub const LE_ADVERTISING_MANAGER_IFACE: &str = "org.bluez.LEAdvertisingManager1";

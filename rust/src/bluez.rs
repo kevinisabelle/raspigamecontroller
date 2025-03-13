@@ -1,19 +1,27 @@
-﻿use std::collections::HashMap;
-use zbus::fdo;
-use zbus::{interface, zvariant::ObjectPath};
+﻿use crate::constants::{
+    ADAPTER_IFACE, ADAPTER_PATH, AGENT_MANAGER_IFACE, BLUEZ_SERVICE, BLUEZ_SERVICE_PATH,
+    DBUS_PROPERTIES_IFACE, LE_ADVERTISING_MANAGER_IFACE,
+};
+use std::collections::HashMap;
 use std::error::Error;
-use zbus::{Connection, Proxy};
-use zbus::names::BusName;
+use zbus::fdo;
 use zbus::zvariant::Value;
-use crate::utils::insert_if_some;
+use zbus::{interface, zvariant::ObjectPath};
+use zbus::{Connection, Proxy};
 
-const BLUEZ_SERVICE: &str = "org.bluez";
-const BLUEZ_SERVICE_PATH: &str = "/org/bluez";
-const ADAPTER_PATH: &str = "/org/bluez/hci0";  // adjust if needed
-const AGENT_MANAGER_IFACE: &str = "org.bluez.AgentManager1";
-const DBUS_PROPERTIES_IFACE: &str = "org.freedesktop.DBus.Properties";
-const ADAPTER_IFACE: &str = "org.bluez.Adapter1";
-const LEADVERTISEMENT_MANAGER_IFACE: &str = "org.bluez.LEAdvertisingManager1";
+pub type Properties<'a> = HashMap<String, zbus::zvariant::Value<'a>>;
+
+pub trait DBusProperties {
+    fn get_all(&self, interface: &str) -> Properties;
+
+    fn properties_changed(
+        &self,
+        _changed: HashMap<String, Value>,
+        _invalidated: Vec<String>,
+    ) -> fdo::Result<()> {
+        Ok(())
+    }
+}
 
 #[derive(Default)]
 pub struct Agent {
@@ -21,7 +29,7 @@ pub struct Agent {
 }
 
 impl Agent {
-    pub fn new(path : String) -> Self {
+    pub fn new(path: String) -> Self {
         Self { path }
     }
 }
@@ -42,13 +50,19 @@ impl Agent {
 
     // The DisplayPasskey method receives a device path and a passkey.
     async fn display_passkey(&self, device: ObjectPath<'_>, passkey: u32) -> fdo::Result<()> {
-        println!("DisplayPasskey for device: {}, passkey: {}", device, passkey);
+        println!(
+            "DisplayPasskey for device: {}, passkey: {}",
+            device, passkey
+        );
         Ok(())
     }
 
     // The RequestConfirmation method receives a device path and passkey.
     async fn request_confirmation(&self, device: ObjectPath<'_>, passkey: u32) -> fdo::Result<()> {
-        println!("Auto-confirming pairing for device: {} with passkey: {}", device, passkey);
+        println!(
+            "Auto-confirming pairing for device: {} with passkey: {}",
+            device, passkey
+        );
         Ok(())
     }
 
@@ -79,26 +93,32 @@ pub async fn register_agent(
     agent_object_path: &str,
     capability: &str,
 ) -> Result<(), zbus::Error> {
-
     // Create a proxy for the AgentManager interface on /org/bluez.
     let agent_manager = Proxy::new(
         &connection,
         BLUEZ_SERVICE,
         BLUEZ_SERVICE_PATH,
         AGENT_MANAGER_IFACE,
-    ).await?;
+    )
+    .await?;
 
     println!("Agent manager proxy created");
 
     let result_registering = agent_manager
-        .call_method("RegisterAgent", &(ObjectPath::try_from(agent_object_path)?, capability))
+        .call_method(
+            "RegisterAgent",
+            &(ObjectPath::try_from(agent_object_path)?, capability),
+        )
         .await?;
 
     println!("Agent registered: {:?}", result_registering);
 
     // Call RequestDefaultAgent(agent_object_path)
     agent_manager
-        .call_method("RequestDefaultAgent", &(ObjectPath::try_from(agent_object_path)?))
+        .call_method(
+            "RequestDefaultAgent",
+            &(ObjectPath::try_from(agent_object_path)?),
+        )
         .await?;
     println!("Agent registered as default with {} capability", capability);
 
@@ -108,7 +128,9 @@ pub async fn register_agent(
         BLUEZ_SERVICE,
         ADAPTER_PATH,
         DBUS_PROPERTIES_IFACE,
-    ).await {
+    )
+    .await
+    {
         Ok(adapter_proxy) => {
             async fn set_property(
                 proxy: &Proxy<'_>,
@@ -138,6 +160,7 @@ pub async fn register_agent(
     Ok(())
 }
 
+#[derive(Default)]
 pub struct Advertisement {
     pub path: String,
     ad_type: String,
@@ -165,23 +188,6 @@ impl Advertisement {
             data: None,
             appearance: None,
         }
-    }
-
-    // Then within your get_properties method:
-    pub fn get_properties(&self) -> HashMap<String, zbus::zvariant::Value> {
-        let mut properties = HashMap::new();
-        properties.insert("Type".to_string(), zbus::zvariant::Value::from(self.ad_type.clone()));
-        insert_if_some(&mut properties, "ServiceUUIDs", &self.service_uuids);
-        insert_if_some(&mut properties, "Appearance", &self.appearance);
-        insert_if_some(&mut properties, "SolicitUUIDs", &self.solicit_uuids);
-        insert_if_some(&mut properties, "ManufacturerData", &self.manufacturer_data);
-        insert_if_some(&mut properties, "ServiceData", &self.service_data);
-        insert_if_some(&mut properties, "LocalName", &self.local_name);
-        if self.include_tx_power {
-            properties.insert("Includes".to_string(), zbus::zvariant::Value::from(vec!["tx-power".to_string()]));
-        }
-        insert_if_some(&mut properties, "Data", &self.data);
-        properties
     }
 
     pub fn get_path(&self) -> ObjectPath {
@@ -214,7 +220,10 @@ impl Advertisement {
         if self.manufacturer_data.is_none() {
             self.manufacturer_data = Some(HashMap::new());
         }
-        self.manufacturer_data.as_mut().unwrap().insert(manuf_code, data);
+        self.manufacturer_data
+            .as_mut()
+            .unwrap()
+            .insert(manuf_code, data);
     }
 
     pub fn add_service_data(&mut self, uuid: String, data: Vec<u8>) {
@@ -238,16 +247,48 @@ impl Advertisement {
 
 #[interface(name = "org.bluez.LEAdvertisement1")]
 impl Advertisement {
-
     pub async fn release(&self) -> fdo::Result<()> {
         println!("{}: Released!", self.path);
         Ok(())
     }
 
-    #[zbus(property, name="All")]
-    pub fn get_all(&self) -> fdo::Result<HashMap<String, Value>> {
-        // Return the full properties as expected.
-        Ok(self.get_properties())
+    #[zbus(property, name = "Type")]
+    pub fn get_type(&self) -> &str {
+        &self.ad_type
+    }
+
+    #[zbus(property, name = "ServiceUUIDs")]
+    pub fn get_service_uuids(&self) -> Vec<String> {
+        self.service_uuids.clone().unwrap_or_default()
+    }
+
+    #[zbus(property, name = "ManufacturerData")]
+    pub fn get_manufacturer_data(&self) -> HashMap<u16, Vec<u8>> {
+        self.manufacturer_data.clone().unwrap_or_default()
+    }
+
+    #[zbus(property, name = "SolicitUUIDs")]
+    pub fn get_solicit_uuids(&self) -> Vec<String> {
+        self.solicit_uuids.clone().unwrap_or_default()
+    }
+
+    #[zbus(property, name = "ServiceData")]
+    pub fn get_service_data(&self) -> HashMap<String, Vec<u8>> {
+        self.service_data.clone().unwrap_or_default()
+    }
+
+    #[zbus(property, name = "LocalName")]
+    pub fn get_local_name(&self) -> String {
+        self.local_name.clone().unwrap_or_default()
+    }
+
+    #[zbus(property, name = "Includes")]
+    pub fn get_includes(&self) -> Vec<String> {
+        if self.include_tx_power {
+            vec!["tx-power".to_string()]
+        } else {
+            Vec::new()
+        }
     }
 }
 
@@ -263,15 +304,15 @@ pub async fn register_advertisement(
     advertisement_path: String,
 ) -> Result<(), zbus::Error> {
     // Obtain the unique name of the BlueZ service.
-    
+
     // Create a proxy to the adapter's LEAdvertisementManager1 interface using the unique destination.
     let ad_manager: Proxy = Proxy::new(
         connection,
         BLUEZ_SERVICE,
         ADAPTER_PATH,
-        LEADVERTISEMENT_MANAGER_IFACE,
+        LE_ADVERTISING_MANAGER_IFACE,
     )
-        .await?;
+    .await?;
 
     // Create an empty dictionary for the options.
     let options: HashMap<String, zbus::zvariant::Value> = HashMap::new();
@@ -288,4 +329,51 @@ pub async fn register_advertisement(
         .await?;
 
     Ok(())
+}
+
+// A type alias for simplicity
+
+// GattCharacteristic trait defines common methods with defaults.
+pub trait GattCharacteristic {
+    // Default read_value returns a not supported error.
+    fn read_value(&self, _options: HashMap<String, String>) -> fdo::Result<Vec<u8>> {
+        Err(fdo::Error::Failed("Not supported".into()))
+    }
+
+    fn write_value(&self, _value: Vec<u8>, _options: HashMap<String, String>) -> fdo::Result<()> {
+        Err(fdo::Error::Failed("Not supported".into()))
+    }
+
+    fn start_notify(&self) -> fdo::Result<()> {
+        Err(fdo::Error::Failed("Not supported".into()))
+    }
+
+    fn stop_notify(&self) -> fdo::Result<()> {
+        Err(fdo::Error::Failed("Not supported".into()))
+    }
+}
+
+pub struct BasicCharacteristic {
+    pub path: String,
+    pub uuid: String,
+    pub flags: Vec<String>,
+    // For simplicity, service represented by its path.
+    pub service: String,
+    pub descriptors: Vec<String>,
+}
+
+impl BasicCharacteristic {
+    pub fn new(path: String, uuid: String, flags: Vec<String>, service: String) -> Self {
+        Self {
+            path,
+            uuid,
+            flags,
+            service,
+            descriptors: Vec::new(),
+        }
+    }
+
+    pub fn add_descriptor(&mut self, descriptor_path: String) {
+        self.descriptors.push(descriptor_path);
+    }
 }
