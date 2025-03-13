@@ -11,21 +11,23 @@ const AGENT_PATH: &str = "/org/bluez/gamepadkiagent";
 #[tokio::main]
 async fn main() -> Result<()> {
 
-    println!("Registering advertisement...");
+    println!("Starting GamepadKI...");
 
-    let connection = Connection::session()
+    let connection = Connection::system()
         .await?;
 
     println!("Connection established!");
 
     let agent = bluez::Agent::new(AGENT_PATH.to_string());
 
-    println!("Registering agent...");
+    println!("Registering agent with path {}...", AGENT_PATH);
 
-    register_agent(&connection, &agent.path, "DisplayOnly")
+    register_agent(&connection, &agent, "DisplayOnly")
         .await?;
 
     println!("Agent registered!");
+    
+    println!("Creating advertisement...");
 
     let advert = hid::GamePadAdvertisement::new(1);
 

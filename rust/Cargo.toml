@@ -1,8 +1,18 @@
 [package]
-name = "rust"
+name = "gamepadki"
 version = "0.1.0"
 edition = "2024"
+
+[[bin]]
+name = "gamepadki"
+path = "src/main.rs"
 
 [dependencies]
 zbus = "5.5.0"
 tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+debug = false

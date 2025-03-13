@@ -75,10 +75,9 @@ impl Agent {
 
 pub async fn register_agent(
     connection: &Connection,
-    agent_object_path: &str,
+    agent: &Agent,
     capability: &str,
 ) -> Result<(), zbus::Error> {
-    println!("Registering agent...");
 
     // Create a proxy for the AgentManager interface on /org/bluez.
     let agent_manager = Proxy::new(
@@ -88,13 +87,20 @@ pub async fn register_agent(
         AGENT_MANAGER_IFACE,
     ).await?;
 
+    println!("Agent manager proxy created");
+
     // Call RegisterAgent(agent_object_path, capability)
-    agent_manager
-        .call_method("RegisterAgent", &(agent_object_path, capability))
+    let agent_object_path = agent.path.as_str();
+    
+    let result_registering = agent_manager
+        .call_method("RegisterAgent", &(ObjectPath::try_from(agent_object_path)?, capability))
         .await?;
+
+    println!("Agent registered: {:?}", result_registering);
+
     // Call RequestDefaultAgent(agent_object_path)
     agent_manager
-        .call_method("RequestDefaultAgent", &(agent_object_path))
+        .call_method("RequestDefaultAgent", &(ObjectPath::try_from(agent_object_path)?))
         .await?;
     println!("Agent registered as default with {} capability", capability);
 
@@ -258,7 +264,6 @@ pub async fn register_advertisement(
     connection: &Connection,
     advertisement_path: &str,
 ) -> Result<(), zbus::Error> {
-    println!("Registering advertisement...");
 
     // Create a proxy to the adapter's LEAdvertisementManager1 interface.
     let ad_manager: Proxy = Proxy::new(connection,
@@ -271,7 +276,7 @@ pub async fn register_advertisement(
 
     // Call the RegisterAdvertisement method.
     match ad_manager
-        .call_method("RegisterAdvertisement", &(advertisement_path, options))
+        .call_method("RegisterAdvertisement", &(ObjectPath::try_from(advertisement_path)?, options))
         .await
     {
         Ok(reply) => {
