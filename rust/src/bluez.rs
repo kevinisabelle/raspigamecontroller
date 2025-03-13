@@ -3,6 +3,7 @@ use zbus::fdo;
 use zbus::{interface, zvariant::ObjectPath};
 use std::error::Error;
 use zbus::{Connection, Proxy};
+use zbus::names::BusName;
 use zbus::zvariant::Value;
 use crate::utils::insert_if_some;
 
@@ -12,7 +13,7 @@ const ADAPTER_PATH: &str = "/org/bluez/hci0";  // adjust if needed
 const AGENT_MANAGER_IFACE: &str = "org.bluez.AgentManager1";
 const DBUS_PROPERTIES_IFACE: &str = "org.freedesktop.DBus.Properties";
 const ADAPTER_IFACE: &str = "org.bluez.Adapter1";
-const LEADVERTISEMENT_MANAGER_IFACE: &str = "org.bluez.LEAdvertisementManager1";
+const LEADVERTISEMENT_MANAGER_IFACE: &str = "org.bluez.LEAdvertisingManager1";
 
 #[derive(Default)]
 pub struct Agent {
@@ -75,7 +76,7 @@ impl Agent {
 
 pub async fn register_agent(
     connection: &Connection,
-    agent: &Agent,
+    agent_object_path: &str,
     capability: &str,
 ) -> Result<(), zbus::Error> {
 
@@ -89,9 +90,6 @@ pub async fn register_agent(
 
     println!("Agent manager proxy created");
 
-    // Call RegisterAgent(agent_object_path, capability)
-    let agent_object_path = agent.path.as_str();
-    
     let result_registering = agent_manager
         .call_method("RegisterAgent", &(ObjectPath::try_from(agent_object_path)?, capability))
         .await?;
@@ -141,7 +139,7 @@ pub async fn register_agent(
 }
 
 pub struct Advertisement {
-    path: String,
+    pub path: String,
     ad_type: String,
     service_uuids: Option<Vec<String>>,
     manufacturer_data: Option<HashMap<u16, Vec<u8>>>,
@@ -154,9 +152,9 @@ pub struct Advertisement {
 }
 
 impl Advertisement {
-    pub fn new(index: u32, advertising_type: String) -> Self {
+    pub fn new(path: &str, advertising_type: String) -> Self {
         Self {
-            path: format!("/org/bluez/advertisement{}", index),
+            path: path.to_string(),
             ad_type: advertising_type,
             service_uuids: None,
             manufacturer_data: None,
@@ -262,32 +260,32 @@ impl Advertisement {
 /// * `advertisement_path` - A string slice holding the advertisement's object path.
 pub async fn register_advertisement(
     connection: &Connection,
-    advertisement_path: &str,
+    advertisement_path: String,
 ) -> Result<(), zbus::Error> {
-
-    // Create a proxy to the adapter's LEAdvertisementManager1 interface.
-    let ad_manager: Proxy = Proxy::new(connection,
-                                       BLUEZ_SERVICE,
-                                       ADAPTER_PATH,
-                                       LEADVERTISEMENT_MANAGER_IFACE).await?;
+    // Obtain the unique name of the BlueZ service.
+    
+    // Create a proxy to the adapter's LEAdvertisementManager1 interface using the unique destination.
+    let ad_manager: Proxy = Proxy::new(
+        connection,
+        BLUEZ_SERVICE,
+        ADAPTER_PATH,
+        LEADVERTISEMENT_MANAGER_IFACE,
+    )
+        .await?;
 
     // Create an empty dictionary for the options.
-    let options: HashMap<&str, Value> = HashMap::new();
+    let options: HashMap<String, zbus::zvariant::Value> = HashMap::new();
 
     // Call the RegisterAdvertisement method.
-    match ad_manager
-        .call_method("RegisterAdvertisement", &(ObjectPath::try_from(advertisement_path)?, options))
-        .await
-    {
-        Ok(reply) => {
-            println!("Advertisement registered (reply_handler)");
-            // Optionally inspect the reply if needed.
-            let _result = reply.to_string();
-        }
-        Err(e) => {
-            println!("Advertisement registration error (error_handler): {}", e);
-        }
-    }
+    ad_manager
+        .call_method(
+            "RegisterAdvertisement",
+            &(
+                zbus::zvariant::ObjectPath::try_from(advertisement_path)?,
+                options,
+            ),
+        )
+        .await?;
 
     Ok(())
 }

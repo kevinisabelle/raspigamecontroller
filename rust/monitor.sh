@@ -1,0 +1,1 @@
+﻿sudo dbus-monitor --system "path_namespace=/org/bluez"
