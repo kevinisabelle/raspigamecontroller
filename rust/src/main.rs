@@ -1,12 +1,17 @@
+use std::sync::Arc;
 use crate::bluez::register_advertisement;
 use crate::bluez::register_agent;
-use crate::constants::{ADVERT_PATH, AGENT_PATH};
+use crate::constants::{ADVERT_PATH, AGENT_PATH, APP_PATH, DEVICE_PATH};
 use zbus::{Connection, Result};
+use crate::gamepad_values::GamepadValues1;
+use crate::hid::{register_application};
+use crate::utils::register_object;
 
 mod bluez;
 mod constants;
 mod gamepad_values;
 mod hid;
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -16,30 +21,20 @@ async fn main() -> Result<()> {
 
     println!("Connection established!");
 
-    let agent = bluez::Agent::new(AGENT_PATH.to_string());
-
-    connection
-        .object_server()
-        .at(AGENT_PATH.to_string(), agent)
-        .await?;
-
-    println!("Registering agent with path {}...", AGENT_PATH);
-
+    let agent = Arc::new(bluez::Agent::new(AGENT_PATH.to_string()));
+    register_object(&connection, agent).await?;
     register_agent(&connection, AGENT_PATH, "DisplayOnly").await?;
-
-    println!("Agent registered!");
-
+    
     println!("Creating advertisement...");
 
-    let advert = hid::create_advertisement(ADVERT_PATH);
-
-    connection.object_server().at(ADVERT_PATH, advert).await?;
-
-    println!("Registering advertisement...");
-
+    let advert = Arc::new(hid::create_advertisement(ADVERT_PATH.to_string()));
+    register_object(&connection, advert).await?;
     register_advertisement(&connection, ADVERT_PATH.to_string()).await?;
 
     println!("Advertisement registered!");
-
+    
+    let gamepad_values = Arc::from(GamepadValues1::new());
+    let app = Arc::new(hid::GattApplication::new(APP_PATH.to_string(), DEVICE_PATH.to_string(), gamepad_values));
+    register_application(&connection, app).await?;
     loop {}
 }

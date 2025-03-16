@@ -4,10 +4,12 @@
 };
 use std::collections::HashMap;
 use std::error::Error;
+use std::fmt::{Debug, Formatter};
 use zbus::fdo;
 use zbus::zvariant::Value;
 use zbus::{interface, zvariant::ObjectPath};
 use zbus::{Connection, Proxy};
+use crate::utils::ObjectPathTrait;
 
 pub type Properties<'a> = HashMap<String, zbus::zvariant::Value<'a>>;
 
@@ -31,6 +33,18 @@ pub struct Agent {
 impl Agent {
     pub fn new(path: String) -> Self {
         Self { path }
+    }
+}
+
+impl Debug for Agent {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Agent: {}", self.path)
+    }
+}
+
+impl ObjectPathTrait for Agent {
+    fn object_path(&self) -> String {
+        self.path.clone()
     }
 }
 
@@ -175,73 +189,42 @@ pub struct Advertisement {
 }
 
 impl Advertisement {
-    pub fn new(path: &str, advertising_type: String) -> Self {
+    pub fn new(
+        path: String,
+        ad_type: String,
+        service_uuids: Option<Vec<String>>,
+        manufacturer_data: Option<HashMap<u16, Vec<u8>>>,
+        solicit_uuids: Option<Vec<String>>,
+        service_data: Option<HashMap<String, Vec<u8>>>,
+        local_name: Option<String>,
+        include_tx_power: bool,
+        data: Option<HashMap<u8, Vec<u8>>>,
+        appearance: Option<u16>,
+    ) -> Self {
         Self {
             path: path.to_string(),
-            ad_type: advertising_type,
-            service_uuids: None,
-            manufacturer_data: None,
-            solicit_uuids: None,
-            service_data: None,
-            local_name: None,
-            include_tx_power: false,
-            data: None,
-            appearance: None,
+            ad_type,
+            service_uuids,
+            manufacturer_data,
+            solicit_uuids,
+            service_data,
+            local_name,
+            include_tx_power,
+            data,
+            appearance,
         }
     }
+}
 
-    pub fn get_path(&self) -> ObjectPath {
-        ObjectPath::try_from(self.path.clone()).unwrap()
+impl ObjectPathTrait for Advertisement {
+    fn object_path(&self) -> String {
+        self.path.clone()
     }
+}
 
-    pub fn set_appearance(&mut self, appearance: u16) {
-        self.appearance = Some(appearance);
-    }
-
-    pub fn set_include_tx_power(&mut self, include: bool) {
-        self.include_tx_power = include;
-    }
-
-    pub fn add_service_uuid(&mut self, uuid: String) {
-        if self.service_uuids.is_none() {
-            self.service_uuids = Some(Vec::new());
-        }
-        self.service_uuids.as_mut().unwrap().push(uuid);
-    }
-
-    pub fn add_solicit_uuid(&mut self, uuid: String) {
-        if self.solicit_uuids.is_none() {
-            self.solicit_uuids = Some(Vec::new());
-        }
-        self.solicit_uuids.as_mut().unwrap().push(uuid);
-    }
-
-    pub fn add_manufacturer_data(&mut self, manuf_code: u16, data: Vec<u8>) {
-        if self.manufacturer_data.is_none() {
-            self.manufacturer_data = Some(HashMap::new());
-        }
-        self.manufacturer_data
-            .as_mut()
-            .unwrap()
-            .insert(manuf_code, data);
-    }
-
-    pub fn add_service_data(&mut self, uuid: String, data: Vec<u8>) {
-        if self.service_data.is_none() {
-            self.service_data = Some(HashMap::new());
-        }
-        self.service_data.as_mut().unwrap().insert(uuid, data);
-    }
-
-    pub fn add_local_name(&mut self, name: String) {
-        self.local_name = Some(name);
-    }
-
-    pub fn add_data(&mut self, ad_type: u8, data: Vec<u8>) {
-        if self.data.is_none() {
-            self.data = Some(HashMap::new());
-        }
-        self.data.as_mut().unwrap().insert(ad_type, data);
+impl Debug for Advertisement {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Advertisement: {}", self.path)
     }
 }
 
@@ -331,49 +314,75 @@ pub async fn register_advertisement(
     Ok(())
 }
 
-// A type alias for simplicity
-
-// GattCharacteristic trait defines common methods with defaults.
-pub trait GattCharacteristic {
-    // Default read_value returns a not supported error.
-    fn read_value(&self, _options: HashMap<String, String>) -> fdo::Result<Vec<u8>> {
-        Err(fdo::Error::Failed("Not supported".into()))
-    }
-
-    fn write_value(&self, _value: Vec<u8>, _options: HashMap<String, String>) -> fdo::Result<()> {
-        Err(fdo::Error::Failed("Not supported".into()))
-    }
-
-    fn start_notify(&self) -> fdo::Result<()> {
-        Err(fdo::Error::Failed("Not supported".into()))
-    }
-
-    fn stop_notify(&self) -> fdo::Result<()> {
-        Err(fdo::Error::Failed("Not supported".into()))
-    }
-}
-
-pub struct BasicCharacteristic {
+pub struct BaseGattCharacteristic {
     pub path: String,
     pub uuid: String,
     pub flags: Vec<String>,
-    // For simplicity, service represented by its path.
     pub service: String,
     pub descriptors: Vec<String>,
 }
 
-impl BasicCharacteristic {
-    pub fn new(path: String, uuid: String, flags: Vec<String>, service: String) -> Self {
+impl BaseGattCharacteristic {
+    pub fn new(
+        path: String,
+        uuid: String,
+        flags: Vec<String>,
+        service: String,
+        descriptors: Vec<String>,
+    ) -> Self {
         Self {
             path,
             uuid,
             flags,
             service,
-            descriptors: Vec::new(),
+            descriptors,
         }
     }
+}
 
-    pub fn add_descriptor(&mut self, descriptor_path: String) {
-        self.descriptors.push(descriptor_path);
+pub struct BaseGattDescriptor {
+    pub path: String,
+    pub uuid: String,
+    pub flags: Vec<String>,
+    pub characteristic: String,
+}
+
+impl BaseGattDescriptor {
+    pub fn new(path: String, uuid: String, flags: Vec<String>, characteristic: String) -> Self {
+        Self {
+            path,
+            uuid,
+            flags,
+            characteristic,
+        }
+    }
+}
+
+pub struct BaseGattService {
+    pub path: String,
+    pub uuid: String,
+    pub primary: bool,
+    pub characteristics: Vec<String>,
+}
+
+impl BaseGattService {
+    pub fn new(path: String, uuid: String, primary: bool, characteristics: Vec<String>) -> Self {
+        Self {
+            path,
+            uuid,
+            primary,
+            characteristics,
+        }
+    }
+}
+
+pub struct BaseGattApplication {
+    pub path: String,
+    pub services: Vec<String>,
+}
+
+impl BaseGattApplication {
+    pub fn new(path: String, services: Vec<String>) -> Self {
+        Self { path, services }
     }
 }
