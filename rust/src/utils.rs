@@ -1,7 +1,8 @@
-﻿use std::fmt::Debug;
+﻿use std::collections::HashMap;
+use std::fmt::Debug;
 use std::sync::Arc;
-use zbus::Connection;
 use zbus::object_server::Interface;
+use zbus::Connection;
 
 pub trait ObjectPathTrait {
     fn object_path(&self) -> String;
@@ -14,9 +15,8 @@ where
     println!("Registering object: {:?}", object);
     let object_unwrapped = match Arc::try_unwrap(object) {
         Ok(o) => o,
-        Err(e) => {
-            println!("Failed to unwrap object: {:?}", &e.object_path());
-            return Err(zbus::Error::NameTaken);
+        Err(_) => {
+            panic!("Failed to unwrap object");
         }
     };
     let object_path = object_unwrapped.object_path().clone();
@@ -29,3 +29,4 @@ where
     Ok(())
 }
 
+pub type Properties<'a> = HashMap<String, zbus::zvariant::Value<'a>>;

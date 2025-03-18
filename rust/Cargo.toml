@@ -10,6 +10,7 @@ path = "src/main.rs"
 [dependencies]
 zbus = "5.5.0"
 tokio = { version = "1.44.0", features = ["rt", "rt-multi-thread", "macros"] }
+paste = "1.0"
 
 [profile.release]
 opt-level = "z"

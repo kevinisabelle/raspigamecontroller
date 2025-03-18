@@ -1,0 +1,17 @@
+﻿mod battery_level_chrc;
+mod battery_service;
+mod ccc_desc;
+mod device_info_service;
+mod gatt_application;
+mod hardware_revision_chrc;
+mod hid_control_point_chrc;
+mod hid_info_chrc;
+mod hid_service;
+mod manufacturer_name_chrc;
+mod model_number_chrc;
+mod pnpid_chrc;
+mod protocol_mode_chrc;
+mod report_chrc;
+pub mod report_map_chrc;
+mod report_ref_desc;
+mod serial_number_chrc;

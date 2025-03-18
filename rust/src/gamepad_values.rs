@@ -1,4 +1,5 @@
-﻿pub struct GamepadValues1;
+﻿#[derive(Debug)]
+pub struct GamepadValues1;
 
 
 impl GamepadValues1 {
