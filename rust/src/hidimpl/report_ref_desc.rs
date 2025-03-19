@@ -1,9 +1,9 @@
-﻿use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use zbus::interface;
-use crate::bluez::BaseGattDescriptor;
+﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
 use crate::constants::GATT_DESC_CLIENT_DESCRIPTOR_UUID;
 use crate::utils::ObjectPathTrait;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use zbus::interface;
 
 #[derive(Debug)]
 pub struct ReportReferenceDesc {
@@ -41,20 +41,5 @@ pub(crate) struct ReportReferenceDescInterface(pub Arc<Mutex<ReportReferenceDesc
 impl ReportReferenceDescInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.0.lock().unwrap().base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.0.lock().unwrap().base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_characteristic(&self) -> String {
-        self.0.lock().unwrap().base.characteristic.clone()
     }
 }

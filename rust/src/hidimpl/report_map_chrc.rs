@@ -1,11 +1,12 @@
-﻿use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use zbus::interface;
-use zbus::zvariant::Value;
-use crate::bluez::BaseGattCharacteristic;
+﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::GATT_REPORT_MAP_UUID;
 use crate::gamepad_values::GamepadValues1;
 use crate::utils::ObjectPathTrait;
+use macros::gatt_chrc_properties;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use zbus::interface;
+use zbus::zvariant::Value;
 
 #[derive(Debug)]
 pub struct ReportMapChrc {
@@ -35,13 +36,13 @@ impl ReportMapChrc {
             "Value".to_string(),
             Value::from(self.gamepad_values.get_report_map()),
         );
-        
+
         let base_properties = self.base.get_properties();
-        
+
         for (key, value) in base_properties {
             properties.insert(key, value);
         }
-        
+
         properties
     }
 }
@@ -49,8 +50,9 @@ impl ReportMapChrc {
 pub(crate) struct ReportMapChrcInterface(pub Arc<Mutex<ReportMapChrc>>);
 
 #[interface(name = "org.bluez.GattCharacteristic1")]
+#[gatt_chrc_properties()]
 impl ReportMapChrcInterface {
-    #[zbus(property)]
+
     fn get_value(&self) -> Vec<u8> {
         let report_map = self.0.lock().unwrap().gamepad_values.get_report_map();
         report_map
@@ -67,25 +69,5 @@ impl ReportMapChrcInterface {
                 .join(" ")
         );
         Ok(report_map)
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.0.lock().unwrap().base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.0.lock().unwrap().base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_service(&self) -> String {
-        self.0.lock().unwrap().base.service.clone()
-    }
-
-    #[zbus(property)]
-    fn get_descriptors(&self) -> Vec<String> {
-        self.0.lock().unwrap().base.descriptors.clone()
     }
 }

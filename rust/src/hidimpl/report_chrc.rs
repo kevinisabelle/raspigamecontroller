@@ -1,10 +1,11 @@
-﻿use crate::bluez::BaseGattCharacteristic;
-use crate::constants::GATT_REPORT_UUID;
+﻿use crate::constants::GATT_REPORT_UUID;
 use crate::gamepad_values::GamepadValues1;
 use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use macros::gatt_chrc_properties;
 use zbus::interface;
+use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
 #[derive(Debug)]
 pub struct ReportChrc {
@@ -36,10 +37,12 @@ impl ReportChrc {
 
 pub(crate) struct ReportChrcInterface(pub Arc<Mutex<ReportChrc>>);
 
+#[gatt_chrc_properties()]
 #[interface(name = "org.bluez.GattCharacteristic1")]
 impl ReportChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
-        let report = self.gamepad_values.get_report_map();
+        let gamepad_values = self.0.lock().unwrap().gamepad_values.clone();
+        let report = gamepad_values.get_report_map();
         println!(
             "Report read handler called, Hex: {}",
             report
@@ -65,25 +68,5 @@ impl ReportChrcInterface {
                 .join(" ")
         );
         Ok(())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_service(&self) -> String {
-        self.base.service.clone()
-    }
-
-    #[zbus(property)]
-    fn get_descriptors(&self) -> Vec<String> {
-        self.base.descriptors.clone()
     }
 }

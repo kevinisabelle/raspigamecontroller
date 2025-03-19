@@ -1,9 +1,10 @@
-﻿use crate::bluez::BaseGattCharacteristic;
-use crate::constants::GATT_HID_INFORMATION_UUID;
+﻿use crate::constants::GATT_HID_INFORMATION_UUID;
 use crate::utils::ObjectPathTrait;
+use macros::gatt_chrc_properties;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
+use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
 #[derive(Debug)]
 pub struct HidInfoChrc {
@@ -30,29 +31,10 @@ impl HidInfoChrc {
 
 pub(crate) struct HidInfoChrcInterface(pub Arc<Mutex<HidInfoChrc>>);
 
+#[gatt_chrc_properties()]
 #[interface(name = "org.bluez.GattCharacteristic1")]
 impl HidInfoChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(self.value.clone())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_service(&self) -> String {
-        self.base.service.clone()
-    }
-
-    #[zbus(property)]
-    fn get_descriptors(&self) -> Vec<String> {
-        self.base.descriptors.clone()
+        Ok(self.0.lock().unwrap().value.clone())
     }
 }

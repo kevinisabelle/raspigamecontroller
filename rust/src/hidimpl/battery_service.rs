@@ -1,9 +1,10 @@
-﻿use crate::bluez::BaseGattService;
-use crate::constants::BATTERY_SERVICE_UUID;
+﻿use crate::constants::BATTERY_SERVICE_UUID;
 use crate::utils::ObjectPathTrait;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
+use macros::gatt_service_properties;
 use zbus::interface;
+use crate::bluez::base_gatt_service::BaseGattService;
 
 #[derive(Debug)]
 pub struct BatteryService {
@@ -30,20 +31,8 @@ impl BatteryService {
 
 pub(crate) struct BatteryServiceInterface(pub Arc<Mutex<BatteryService>>);
 
+#[gatt_service_properties()]
 #[interface(name = "org.bluez.GattService1")]
 impl BatteryServiceInterface {
-    #[zbus(property)]
-    fn get_primary(&self) -> bool {
-        self.base.primary
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_characteristics(&self) -> Vec<String> {
-        self.base.characteristics.clone()
-    }
+   
 }

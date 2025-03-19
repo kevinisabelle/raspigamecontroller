@@ -1,9 +1,10 @@
-﻿use crate::bluez::BaseGattService;
-use crate::constants::GATT_SERVICE_HID_UUID;
+﻿use crate::constants::GATT_SERVICE_HID_UUID;
 use crate::utils::ObjectPathTrait;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
+use macros::gatt_service_properties;
 use zbus::interface;
+use crate::bluez::base_gatt_service::BaseGattService;
 
 #[derive(Debug)]
 pub struct HidService {
@@ -30,20 +31,8 @@ impl HidService {
 
 pub(crate) struct HidServiceInterface(pub Arc<Mutex<HidService>>);
 
+#[gatt_service_properties()]
 #[interface(name = "org.bluez.GattService1")]
 impl HidServiceInterface {
-    #[zbus(property)]
-    fn get_primary(&self) -> bool {
-        self.base.primary
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_characteristics(&self) -> Vec<String> {
-        self.base.characteristics.clone()
-    }
+    
 }

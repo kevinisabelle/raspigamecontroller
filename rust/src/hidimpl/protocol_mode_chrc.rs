@@ -1,6 +1,7 @@
-﻿use crate::bluez::BaseGattCharacteristic;
+﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::GATT_PROTOCOL_MODE_UUID;
 use crate::utils::ObjectPathTrait;
+use macros::gatt_chrc_properties;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
@@ -30,10 +31,11 @@ impl ProtocolModeChrc {
 
 pub(crate) struct ProtocolModeChrcInterface(pub Arc<Mutex<ProtocolModeChrc>>);
 
+#[gatt_chrc_properties()]
 #[interface(name = "org.bluez.GattCharacteristic1")]
 impl ProtocolModeChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(self.value.clone())
+        Ok(self.0.lock().unwrap().value.clone())
     }
 
     fn write_value(
@@ -49,27 +51,7 @@ impl ProtocolModeChrcInterface {
                 .collect::<Vec<_>>()
                 .join(" ")
         );
-        self.value = value;
+        self.0.lock().unwrap().value = value;
         Ok(())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_service(&self) -> String {
-        self.base.service.clone()
-    }
-
-    #[zbus(property)]
-    fn get_descriptors(&self) -> Vec<String> {
-        self.base.descriptors.clone()
     }
 }

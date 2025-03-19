@@ -1,10 +1,10 @@
-﻿use crate::hid::HidService;
-use crate::utils::ObjectPathTrait;
+﻿use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::sync::{Arc, Mutex};
 use zbus::interface;
 use zbus::zvariant::Value;
+use crate::hidimpl::hid_service::HidService;
 
 pub struct GattApplication {
     pub path: String,

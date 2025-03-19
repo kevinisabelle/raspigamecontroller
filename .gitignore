@@ -33,3 +33,4 @@ c/cmake-build-debug/
 c/cmake-build-aarch64/
 rust/target/
 cpp/cmake-build-debug/
+rust/macros/target/

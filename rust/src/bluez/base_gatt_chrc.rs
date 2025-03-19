@@ -1,6 +1,5 @@
 ﻿use std::collections::HashMap;
 use zbus::zvariant::Value;
-use zbus::interface;
 
 #[derive(Debug)]
 pub struct BaseGattCharacteristic {
@@ -39,31 +38,4 @@ impl BaseGattCharacteristic {
         );
         properties
     }
-}
-
-#[macro_export]
-macro_rules! gatt_chrc_properties {
-    () => {
-        paste! {
-            #[zbus(property)]
-            fn get_flags(&self) -> Vec<String> {
-                self.0.lock().unwrap().base.flags.clone()
-            }
-
-            #[zbus(property)]
-            fn get_uuid(&self) -> String {
-                self.0.lock().unwrap().base.uuid.clone()
-            }
-
-            #[zbus(property)]
-            fn get_service(&self) -> String {
-                self.0.lock().unwrap().base.service.clone()
-            }
-
-            #[zbus(property)]
-            fn get_descriptors(&self) -> Vec<String> {
-                self.0.lock().unwrap().base.descriptors.clone()
-            }
-        }
-    };
 }

@@ -1,6 +1,7 @@
-﻿use crate::bluez::BaseGattDescriptor;
+﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
 use crate::constants::GATT_DESC_CLIENT_DESCRIPTOR_UUID;
 use crate::utils::ObjectPathTrait;
+use macros::{gatt_desc_properties};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
@@ -38,6 +39,7 @@ impl ClientCharacteristicConfigurationDesc {
 
 pub(crate) struct CCCDescInterface(pub Arc<Mutex<ClientCharacteristicConfigurationDesc>>);
 
+#[gatt_desc_properties()]
 #[interface(name = "org.bluez.GattDescriptor1")]
 impl CCCDescInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
@@ -59,20 +61,5 @@ impl CCCDescInterface {
         );
         self.0.lock().unwrap().value = value;
         Ok(())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.0.lock().unwrap().base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.0.lock().unwrap().base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_characteristic(&self) -> String {
-        self.0.lock().unwrap().base.characteristic.clone()
     }
 }

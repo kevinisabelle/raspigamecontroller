@@ -1,8 +1,9 @@
-﻿use crate::bluez::BaseGattCharacteristic;
-use crate::utils::ObjectPathTrait;
+﻿use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use macros::gatt_chrc_properties;
 use zbus::interface;
+use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
 #[derive(Debug)]
 pub struct ModelNumberChrc {
@@ -29,29 +30,11 @@ impl ModelNumberChrc {
 
 pub(crate) struct ModelNumberChrcInterface(pub Arc<Mutex<ModelNumberChrc>>);
 
+#[gatt_chrc_properties()]
 #[interface(name = "org.bluez.GattCharacteristic1")]
 impl ModelNumberChrcInterface {
+    
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(self.value.clone())
-    }
-
-    #[zbus(property)]
-    fn get_flags(&self) -> Vec<String> {
-        self.base.flags.clone()
-    }
-
-    #[zbus(property)]
-    fn get_uuid(&self) -> String {
-        self.base.uuid.clone()
-    }
-
-    #[zbus(property)]
-    fn get_service(&self) -> String {
-        self.base.service.clone()
-    }
-
-    #[zbus(property)]
-    fn get_descriptors(&self) -> Vec<String> {
-        self.base.descriptors.clone()
+        Ok(self.0.lock().unwrap().value.clone())
     }
 }
