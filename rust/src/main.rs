@@ -1,18 +1,20 @@
+use crate::bluez::advertisment::register_advertisement;
+use crate::bluez::agent::{register_agent, Agent};
 use crate::constants::{ADVERT_PATH, AGENT_PATH};
 use crate::gamepad_values::GamepadValues1;
 use crate::hid::create_and_register_application;
 use crate::utils::register_object;
 use std::sync::{Arc, Mutex};
 use zbus::{Connection, Result};
-use crate::bluez::advertisment::register_advertisement;
-use crate::bluez::agent::{register_agent, Agent};
 
+mod bluez;
 mod constants;
+mod gamepad_updater;
 mod gamepad_values;
+mod hardware;
 mod hid;
 mod hidimpl;
 mod utils;
-mod bluez;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -36,7 +38,7 @@ async fn main() -> Result<()> {
 
     let gamepad_values = Arc::new(Mutex::new(GamepadValues1::new()));
     create_and_register_application(&connection, gamepad_values).await?;
-    
+
     println!("Application registered!");
     loop {}
 }

@@ -333,7 +333,10 @@ name = "gamepadki"
 version = "0.1.0"
 dependencies = [
  "macros",
+ "once_cell",
  "paste",
+ "rppal",
+ "spidev",
  "tokio",
  "zbus",
 ]
@@ -544,6 +547,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rppal"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1ce3b019009cff02cb6b0e96e7cc2e5c5b90187dc1a490f8ef1521d0596b026"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -622,6 +634,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "spidev"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d3081d9cd18e38e608bd29b067168f28b15940e4815ed3e30481e8e661161cf"
+dependencies = [
+ "bitflags",
+ "libc",
+ "nix",
 ]
 
 [[package]]

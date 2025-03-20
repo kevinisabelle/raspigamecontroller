@@ -31,6 +31,16 @@ impl GattApplication {
             device_info_service: None,
         }
     }
+    
+    pub fn notify_hid_report (&self) {
+        if let Some(hid_service) = &self.hid_service {
+            let hid_service = hid_service.lock().unwrap();
+            if let Some(report_chrc) = &hid_service.report_chrc {
+                let report_chrc = report_chrc.lock().unwrap();
+                report_chrc.notify_value_changed();
+            }
+        }
+    }
 }
 
 pub(crate) struct GattApplicationInterface(pub Arc<Mutex<GattApplication>>);

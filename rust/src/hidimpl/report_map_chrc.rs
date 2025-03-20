@@ -48,12 +48,12 @@ pub(crate) struct ReportMapChrcInterface(pub Arc<Mutex<ReportMapChrc>>);
 
 #[gatt_characteristic()]
 impl ReportMapChrcInterface {
-    fn get_value(&self) -> Vec<u8> {
+    fn get_value(&self) -> Vec<u16> {
         let report_map = self.0.lock().unwrap().gamepad_values.lock().unwrap().get_report_map();
         report_map
     }
 
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
+    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u16>> {
         let report_map = self.0.lock().unwrap().gamepad_values.lock().unwrap().get_report_map();
         println!(
             "Report Map read handler called, Hex: {}",
