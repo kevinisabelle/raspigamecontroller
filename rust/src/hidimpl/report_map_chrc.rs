@@ -2,7 +2,7 @@
 use crate::constants::GATT_REPORT_MAP_UUID;
 use crate::gamepad_values::GamepadValues1;
 use crate::utils::ObjectPathTrait;
-use macros::gatt_chrc_properties;
+use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
@@ -49,10 +49,8 @@ impl ReportMapChrc {
 
 pub(crate) struct ReportMapChrcInterface(pub Arc<Mutex<ReportMapChrc>>);
 
-#[interface(name = "org.bluez.GattCharacteristic1")]
-#[gatt_chrc_properties()]
+#[gatt_characteristic()]
 impl ReportMapChrcInterface {
-
     fn get_value(&self) -> Vec<u8> {
         let report_map = self.0.lock().unwrap().gamepad_values.get_report_map();
         report_map

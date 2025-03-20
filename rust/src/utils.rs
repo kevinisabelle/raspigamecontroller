@@ -1,5 +1,6 @@
 ﻿use std::collections::HashMap;
 use std::fmt::Debug;
+use std::sync::Arc;
 use zbus::object_server::Interface;
 use zbus::Connection;
 
@@ -9,15 +10,15 @@ pub trait ObjectPathTrait {
 
 pub async fn register_object<T>(
     connection: &Connection,
-    object: T,
-    path: String,
+    object: Arc<T>,
 ) -> zbus::Result<()>
 where
-    T: Interface + Debug,
+    T: Interface + Debug + ObjectPathTrait,
 {
     println!("Registering object: {:?}", object);
 
-    connection.object_server().at(path.clone(), object).await?;
+    let path = object.object_path();
+    connection.object_server().at(path.clone(), Arc::try_unwrap(object).unwrap()).await?;
 
     println!("Registered object: {}", path);
     Ok(())

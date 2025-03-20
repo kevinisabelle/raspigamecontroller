@@ -1,6 +1,6 @@
 ﻿use crate::constants::GATT_HID_INFORMATION_UUID;
 use crate::utils::ObjectPathTrait;
-use macros::gatt_chrc_properties;
+use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
@@ -31,8 +31,7 @@ impl HidInfoChrc {
 
 pub(crate) struct HidInfoChrcInterface(pub Arc<Mutex<HidInfoChrc>>);
 
-#[gatt_chrc_properties()]
-#[interface(name = "org.bluez.GattCharacteristic1")]
+#[gatt_characteristic()]
 impl HidInfoChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())

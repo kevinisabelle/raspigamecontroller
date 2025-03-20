@@ -2,7 +2,7 @@
 use crate::utils::ObjectPathTrait;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
-use macros::gatt_service_properties;
+use macros::gatt_service;
 use zbus::interface;
 use crate::bluez::base_gatt_service::BaseGattService;
 
@@ -31,8 +31,7 @@ impl BatteryService {
 
 pub(crate) struct BatteryServiceInterface(pub Arc<Mutex<BatteryService>>);
 
-#[gatt_service_properties()]
-#[interface(name = "org.bluez.GattService1")]
+#[gatt_service()]
 impl BatteryServiceInterface {
    
 }

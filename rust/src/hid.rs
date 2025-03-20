@@ -1,10 +1,13 @@
 ﻿use crate::bluez::advertisment::Advertisement;
 use crate::constants::ADV_APPEARANCE_GAMEPAD;
 use crate::gamepad_values::GamepadValues1;
+use crate::hidimpl::ccc_desc::{CCCDescInterface, ClientCharacteristicConfigurationDesc};
 use crate::hidimpl::gatt_application::GattApplication;
 use crate::hidimpl::hid_service::HidService;
+use crate::hidimpl::report_chrc::{ReportChrc, ReportChrcInterface};
 use crate::hidimpl::report_map_chrc::{ReportMapChrc, ReportMapChrcInterface};
-use crate::utils::{register_object, ObjectPathTrait};
+use crate::hidimpl::report_ref_desc::ReportReferenceDesc;
+use crate::utils::ObjectPathTrait;
 use std::sync::{Arc, Mutex};
 use zbus::Connection;
 
@@ -30,40 +33,52 @@ pub async fn create_and_register_application(
 ) -> zbus::Result<()> {
     let mut app = GattApplication::new("/app".to_string());
 
-    let mut hid_service = HidService::new("/service0".to_string());
+    let hid_service = HidService::new("/service0".to_string());
 
     let hid_service_path = hid_service.object_path();
 
-    let report_map_chrc = ReportMapChrc::new(
+    let report_map_chrc = Arc::new(Mutex::new(ReportMapChrc::new(
         format!("{}/char0", hid_service_path.clone()),
         hid_service_path.clone(),
         gamepad_values.clone(),
+    )));
+    let report_map_object_path = report_map_chrc.lock().unwrap().object_path().clone();
+    let report_map_chrc_interface = ReportMapChrcInterface(report_map_chrc);
+    connection
+        .object_server()
+        .at(report_map_object_path, report_map_chrc_interface)
+        .await?;
+
+    let mut report_chrc = ReportChrc::new(
+        format!("{}/char1", hid_service_path.clone()),
+        hid_service_path.clone(),
+        gamepad_values,
     );
 
-    let report_map_chrc_interface = ReportMapChrcInterface(Arc::new(Mutex::new(report_map_chrc)));
+    let report_chrc_path = report_chrc.object_path().clone();
 
-    register_object(connection, report_map_chrc_interface, report_map_chrc.object_path().clone()).await?;
-    /*let mut report_chrc = ReportChrc::new(
-            format!("{}/char1", hid_service_path.clone()),
-            hid_service_path.clone(),
-            gamepad_values,
-        );
+    let ccc_desc = ClientCharacteristicConfigurationDesc::new(
+        format!("{}/desc0", report_chrc_path.clone()),
+        report_chrc_path.clone(),
+    );
+    let rr_desc = Arc::new(ReportReferenceDesc::new(
+        format!("{}/desc1", report_chrc_path.clone()),
+        report_chrc_path.clone(),
+    ));
 
-        let report_chrc_path = report_chrc.object_path().clone();
+    report_chrc.add_descriptor_path(ccc_desc.object_path());
+    report_chrc.add_descriptor_path(rr_desc.object_path());
 
-        let ccc_desc = Arc::new(ClientCharacteristicConfigurationDesc::new(
-            format!("{}/desc0", report_chrc_path.clone()),
-            report_chrc_path.clone(),
-        ));
-        let rr_desc = Arc::new(ReportReferenceDesc::new(
-            format!("{}/desc1", report_chrc_path.clone()),
-            report_chrc_path.clone(),
-        ));
+    let ccc_desc_path = ccc_desc.object_path().clone();
+    let ccc_desc_interface = CCCDescInterface(Arc::new(Mutex::new(ccc_desc)));
 
-        report_chrc.add_descriptor_path(ccc_desc.object_path());
-        report_chrc.add_descriptor_path(rr_desc.object_path());
+    let report_chrc_interface = ReportChrcInterface(Arc::new(Mutex::new(report_chrc)));
+    connection
+        .object_server()
+        .at(report_chrc_path, report_chrc_interface)
+        .await?;
 
-        let protocol_mode_chrc = Arc::new(ProtocolModeChrc::new(
+    /*     let protocol_mode_chrc = Arc::new(ProtocolModeChrc::new(
             format!("{}/char2", hid_service_path.clone()),
             hid_service_path.clone(),
         ));

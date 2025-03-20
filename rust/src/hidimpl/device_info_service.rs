@@ -1,7 +1,7 @@
 ﻿use crate::constants::DEVICE_INFORMATION_SERVICE_UUID;
 use crate::utils::ObjectPathTrait;
 use std::sync::{Arc, Mutex};
-use macros::gatt_service_properties;
+use macros::gatt_service;
 use zbus::interface;
 use crate::bluez::base_gatt_service::BaseGattService;
 
@@ -35,8 +35,7 @@ impl DeviceInfoService {
 
 pub(crate) struct DeviceInfoServiceInterface(pub Arc<Mutex<DeviceInfoService>>);
 
-#[gatt_service_properties()]
-#[interface(name = "org.bluez.GattService1")]
+#[gatt_service()]
 impl DeviceInfoServiceInterface {
    
 }

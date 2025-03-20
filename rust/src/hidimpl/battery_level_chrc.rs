@@ -2,7 +2,7 @@
 use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use macros::gatt_chrc_properties;
+use macros::gatt_characteristic;
 use zbus::interface;
 
 #[derive(Debug)]
@@ -30,8 +30,7 @@ impl BatteryLevelChrc {
 
 pub(crate) struct BatteryLevelChrcInterface(pub Arc<Mutex<BatteryLevelChrc>>);
 
-#[gatt_chrc_properties()]
-#[interface(name = "org.bluez.GattCharacteristic1")]
+#[gatt_characteristic()]
 impl BatteryLevelChrcInterface {
 
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<u8> {

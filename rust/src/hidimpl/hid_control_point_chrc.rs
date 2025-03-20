@@ -2,7 +2,7 @@
 use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use macros::gatt_chrc_properties;
+use macros::gatt_characteristic;
 use zbus::interface;
 use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
@@ -29,8 +29,7 @@ impl HidControlPointChrc {
 
 pub(crate) struct HidControlPointChrcInterface(pub Arc<Mutex<HidControlPointChrc>>);
 
-#[gatt_chrc_properties()]
-#[interface(name = "org.bluez.GattCharacteristic1")]
+#[gatt_characteristic()]
 impl HidControlPointChrcInterface {
     fn write_value(
         &mut self,

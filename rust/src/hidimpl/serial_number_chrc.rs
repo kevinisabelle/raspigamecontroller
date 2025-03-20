@@ -1,7 +1,7 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::SERIAL_NUMBER_CHARACTERISTIC_UUID;
 use crate::utils::ObjectPathTrait;
-use macros::gatt_chrc_properties;
+use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
@@ -31,8 +31,7 @@ impl SerialNumberChrc {
 
 pub(crate) struct SerialNumberChrcInterface(pub Arc<Mutex<SerialNumberChrc>>);
 
-#[gatt_chrc_properties()]
-#[interface(name = "org.bluez.GattCharacteristic1")]
+#[gatt_characteristic()]
 impl SerialNumberChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())

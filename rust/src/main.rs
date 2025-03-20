@@ -36,5 +36,7 @@ async fn main() -> Result<()> {
 
     let gamepad_values = Arc::from(GamepadValues1::new());
     create_and_register_application(&connection, gamepad_values).await?;
+    
+    println!("Application registered!");
     loop {}
 }
