@@ -1,5 +1,6 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::GATT_PROTOCOL_MODE_UUID;
+use crate::object_path;
 use crate::utils::ObjectPathTrait;
 use macros::gatt_characteristic;
 use std::collections::HashMap;
@@ -12,19 +13,15 @@ pub struct ProtocolModeChrc {
     pub value: Vec<u8>,
 }
 
-impl ObjectPathTrait for ProtocolModeChrc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl ProtocolModeChrc {
-    pub fn new(path: String, service: String) -> Self {
-        let uuid = GATT_PROTOCOL_MODE_UUID.to_string();
-        let flags = vec!["read".to_string(), "write".to_string()];
-        Self {
-            base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
-            value: vec![0x01],
+object_path! {
+    impl ProtocolModeChrc {
+        pub fn new(path: String, service: String) -> Self {
+            let uuid = GATT_PROTOCOL_MODE_UUID.to_string();
+            let flags = vec!["read".to_string(), "write".to_string()];
+            Self {
+                base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
+                value: vec![0x01],
+            }
         }
     }
 }

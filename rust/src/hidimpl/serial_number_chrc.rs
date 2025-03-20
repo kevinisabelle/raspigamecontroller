@@ -1,10 +1,11 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::SERIAL_NUMBER_CHARACTERISTIC_UUID;
 use crate::utils::ObjectPathTrait;
-use macros::gatt_characteristic;
+use macros::{gatt_characteristic};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
+use crate::object_path;
 
 #[derive(Debug)]
 pub struct SerialNumberChrc {
@@ -12,19 +13,15 @@ pub struct SerialNumberChrc {
     pub value: Vec<u8>,
 }
 
-impl ObjectPathTrait for SerialNumberChrc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl SerialNumberChrc {
-    pub fn new(path: String, service: String) -> Self {
-        let uuid = SERIAL_NUMBER_CHARACTERISTIC_UUID.to_string();
-        let flags = vec!["read".to_string()];
-        Self {
-            base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
-            value: "1.0".as_bytes().to_vec(),
+object_path! {
+    impl SerialNumberChrc {
+        pub fn new(path: String, service: String) -> Self {
+            let uuid = SERIAL_NUMBER_CHARACTERISTIC_UUID.to_string();
+            let flags = vec!["read".to_string()];
+            Self {
+                base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
+                value: "1.0".as_bytes().to_vec(),
+            }
         }
     }
 }

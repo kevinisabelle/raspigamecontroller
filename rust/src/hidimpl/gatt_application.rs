@@ -1,14 +1,19 @@
-﻿use crate::utils::ObjectPathTrait;
+﻿use crate::hidimpl::battery_service::BatteryService;
+use crate::hidimpl::device_info_service::DeviceInfoService;
+use crate::hidimpl::hid_service::HidService;
+use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
 use zbus::zvariant::Value;
-use crate::hidimpl::hid_service::HidService;
 
+#[derive(Debug)]
 pub struct GattApplication {
     pub path: String,
-    pub hid_service: Option<&'static HidService>,
+    pub hid_service: Option<Arc<Mutex<HidService>>>,
+    pub battery_service: Option<Arc<Mutex<BatteryService>>>,
+    pub device_info_service: Option<Arc<Mutex<DeviceInfoService>>>,
 }
 
 impl ObjectPathTrait for GattApplication {
@@ -17,17 +22,13 @@ impl ObjectPathTrait for GattApplication {
     }
 }
 
-impl Debug for GattApplication {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "GattApplication {{ path: {} }}", self.path)
-    }
-}
-
 impl GattApplication {
     pub fn new(path: String) -> Self {
         Self {
             path,
             hid_service: None,
+            battery_service: None,
+            device_info_service: None,
         }
     }
 }

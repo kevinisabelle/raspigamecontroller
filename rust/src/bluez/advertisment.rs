@@ -97,6 +97,16 @@ impl Advertisement {
             Vec::new()
         }
     }
+    
+    #[zbus(property, name = "Data")]
+    pub fn get_data(&self) -> HashMap<u8, Vec<u8>> {
+        self.data.clone().unwrap_or_default()
+    }
+    
+    #[zbus(property, name = "Appearance")]
+    pub fn get_appearance(&self) -> u16 {
+        self.appearance.unwrap_or_default()
+    }
 }
 
 /// Registers an advertisement by calling the RegisterAdvertisement method on the

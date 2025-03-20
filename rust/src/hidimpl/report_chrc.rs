@@ -2,25 +2,21 @@
 use crate::constants::GATT_REPORT_UUID;
 use crate::gamepad_values::GamepadValues1;
 use crate::utils::ObjectPathTrait;
-use macros::gatt_characteristic;
+use macros::{gatt_characteristic};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
+use crate::object_path;
 
 #[derive(Debug)]
 pub struct ReportChrc {
     pub base: BaseGattCharacteristic,
-    pub gamepad_values: Arc<GamepadValues1>,
+    pub gamepad_values: Arc<Mutex<GamepadValues1>>,
 }
 
-impl ObjectPathTrait for ReportChrc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
+object_path! {
 impl ReportChrc {
-    pub fn new(path: String, service: String, gamepad_values: Arc<GamepadValues1>) -> Self {
+    pub fn new(path: String, service: String, gamepad_values: Arc<Mutex<GamepadValues1>>) -> Self {
         let uuid = GATT_REPORT_UUID.to_string();
         let flags = vec!["read".to_string(), "write".to_string()];
 
@@ -34,6 +30,7 @@ impl ReportChrc {
         self.base.descriptors.push(path);
     }
 }
+}
 
 pub(crate) struct ReportChrcInterface(pub Arc<Mutex<ReportChrc>>);
 
@@ -41,7 +38,7 @@ pub(crate) struct ReportChrcInterface(pub Arc<Mutex<ReportChrc>>);
 impl ReportChrcInterface {
     fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
         let gamepad_values = self.0.lock().unwrap().gamepad_values.clone();
-        let report = gamepad_values.get_report_map();
+        let report = gamepad_values.lock().unwrap().get_report().clone();
         println!(
             "Report read handler called, Hex: {}",
             report

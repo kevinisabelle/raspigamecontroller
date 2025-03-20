@@ -1,28 +1,25 @@
-﻿use crate::constants::GATT_HID_CONTROL_POINT_UUID;
+﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
+use crate::constants::GATT_HID_CONTROL_POINT_UUID;
+use crate::object_path;
 use crate::utils::ObjectPathTrait;
+use macros::{gatt_characteristic};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use macros::gatt_characteristic;
 use zbus::interface;
-use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
 #[derive(Debug)]
 pub struct HidControlPointChrc {
     pub base: BaseGattCharacteristic,
 }
 
-impl ObjectPathTrait for HidControlPointChrc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl HidControlPointChrc {
-    pub fn new(path: String, service: String) -> Self {
-        let uuid = GATT_HID_CONTROL_POINT_UUID.to_string();
-        let flags = vec!["write".to_string()];
-        Self {
-            base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
+object_path! {
+    impl HidControlPointChrc {
+        pub fn new(path: String, service: String) -> Self {
+            let uuid = GATT_HID_CONTROL_POINT_UUID.to_string();
+            let flags = vec!["write".to_string()];
+            Self {
+                base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
+            }
         }
     }
 }

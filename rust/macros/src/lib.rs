@@ -14,18 +14,22 @@ pub fn gatt_characteristic(attr: TokenStream, item: TokenStream) -> TokenStream 
 
     // Define the extra methods to add.
     let methods = quote! {
+        #[zbus(property)]
         fn get_flags(&self) -> Vec<String> {
             self.0.lock().unwrap().base.flags.clone()
         }
 
+        #[zbus(property)]
         fn get_uuid(&self) -> String {
             self.0.lock().unwrap().base.uuid.clone()
         }
 
+        #[zbus(property)]
         fn get_service(&self) -> String {
             self.0.lock().unwrap().base.service.clone()
         }
 
+        #[zbus(property)]
         fn get_descriptors(&self) -> Vec<String> {
             self.0.lock().unwrap().base.descriptors.clone()
         }
@@ -38,8 +42,6 @@ pub fn gatt_characteristic(attr: TokenStream, item: TokenStream) -> TokenStream 
             // Original items.
             #(#orig_items)*
 
-            // New methods with property attributes.
-            #[zbus(property)]
             #methods
         }
     };
@@ -85,8 +87,6 @@ pub fn gatt_descriptor(_attr: TokenStream, item: TokenStream) -> TokenStream {
             // Original items.
             #(#orig_items)*
 
-            // New methods with property attributes.
-            #[zbus(property)]
             #methods
         }
     };
@@ -124,9 +124,6 @@ pub fn gatt_service(_attr: TokenStream, item: TokenStream) -> TokenStream {
         impl #self_ty {
             // Original items.
             #(#orig_items)*
-
-            // New methods with property attributes.
-            #[zbus(property)]
             #methods
         }
     };

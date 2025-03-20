@@ -1,37 +1,32 @@
-﻿use crate::constants::BATTERY_SERVICE_UUID;
+﻿use crate::bluez::base_gatt_service::BaseGattService;
+use crate::constants::BATTERY_SERVICE_UUID;
+use crate::object_path;
 use crate::utils::ObjectPathTrait;
+use macros::gatt_service;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
-use macros::gatt_service;
 use zbus::interface;
-use crate::bluez::base_gatt_service::BaseGattService;
 
 #[derive(Debug)]
 pub struct BatteryService {
     pub base: BaseGattService,
 }
 
-impl ObjectPathTrait for BatteryService {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl BatteryService {
-    pub fn new(path: String) -> Self {
-        Self {
-            base: BaseGattService::new(path, BATTERY_SERVICE_UUID.to_string(), true, vec![]),
+object_path! {
+    impl BatteryService {
+        pub fn new(path: String) -> Self {
+            Self {
+                base: BaseGattService::new(path, BATTERY_SERVICE_UUID.to_string(), true, vec![]),
+            }
         }
-    }
 
-    pub fn add_characteristic_path(&mut self, path: String) {
-        self.base.characteristics.push(path);
+        pub fn add_characteristic_path(&mut self, path: String) {
+            self.base.characteristics.push(path);
+        }
     }
 }
 
 pub(crate) struct BatteryServiceInterface(pub Arc<Mutex<BatteryService>>);
 
 #[gatt_service()]
-impl BatteryServiceInterface {
-   
-}
+impl BatteryServiceInterface {}

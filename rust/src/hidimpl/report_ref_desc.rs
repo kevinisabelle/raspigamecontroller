@@ -1,5 +1,6 @@
 ﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
 use crate::constants::GATT_DESC_CLIENT_DESCRIPTOR_UUID;
+use crate::object_path;
 use crate::utils::ObjectPathTrait;
 use macros::gatt_descriptor;
 use std::collections::HashMap;
@@ -12,27 +13,23 @@ pub struct ReportReferenceDesc {
     pub value: Vec<u8>,
 }
 
-impl ObjectPathTrait for ReportReferenceDesc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl ReportReferenceDesc {
-    pub fn new(path: String, characteristic: String) -> Self {
-        Self {
-            base: BaseGattDescriptor::new(
-                path,
-                GATT_DESC_CLIENT_DESCRIPTOR_UUID.to_string(),
-                vec!["read".to_string()],
-                characteristic,
-            ),
-            value: vec![0x00, 0x01],
+object_path! {
+    impl ReportReferenceDesc {
+        pub fn new(path: String, characteristic: String) -> Self {
+            Self {
+                base: BaseGattDescriptor::new(
+                    path,
+                    GATT_DESC_CLIENT_DESCRIPTOR_UUID.to_string(),
+                    vec!["read".to_string()],
+                    characteristic,
+                ),
+                value: vec![0x00, 0x01],
+            }
         }
-    }
 
-    pub fn set_value(&mut self, value: Vec<u8>) {
-        self.value = value;
+        pub fn set_value(&mut self, value: Vec<u8>) {
+            self.value = value;
+        }
     }
 }
 

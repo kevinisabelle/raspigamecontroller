@@ -1,9 +1,10 @@
-﻿use crate::utils::ObjectPathTrait;
+﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
+use crate::object_path;
+use crate::utils::ObjectPathTrait;
+use macros::{gatt_characteristic};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use macros::gatt_characteristic;
 use zbus::interface;
-use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 
 #[derive(Debug)]
 pub struct ManufacturerNameChrc {
@@ -11,19 +12,15 @@ pub struct ManufacturerNameChrc {
     pub value: Vec<u8>,
 }
 
-impl ObjectPathTrait for ManufacturerNameChrc {
-    fn object_path(&self) -> String {
-        self.base.path.to_string()
-    }
-}
-
-impl ManufacturerNameChrc {
-    pub fn new(path: String, service: String) -> Self {
-        let uuid = "2a29".to_string();
-        let flags = vec!["read".to_string()];
-        Self {
-            base: BaseGattCharacteristic::new(path.clone(), uuid, flags, service, vec![]),
-            value: "Ki".as_bytes().to_vec(),
+object_path! {
+    impl ManufacturerNameChrc {
+        pub fn new(path: String, service: String) -> Self {
+            let uuid = "2a29".to_string();
+            let flags = vec!["read".to_string()];
+            Self {
+                base: BaseGattCharacteristic::new(path.clone(), uuid, flags, service, vec![]),
+                value: "Ki".as_bytes().to_vec(),
+            }
         }
     }
 }

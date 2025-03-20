@@ -25,3 +25,17 @@ where
 }
 
 pub type Properties<'a> = HashMap<String, zbus::zvariant::Value<'a>>;
+
+#[macro_export]
+macro_rules! object_path {
+    (impl $ty:ty { $($body:tt)* }) => {
+        impl $ty {
+            $($body)*
+        }
+        impl ObjectPathTrait for $ty {
+            fn object_path(&self) -> String {
+                self.base.path.to_string()
+            }
+        }
+    };
+}
