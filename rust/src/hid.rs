@@ -1,7 +1,7 @@
 ﻿use crate::bluez::advertisment::Advertisement;
 use crate::constants::ADV_APPEARANCE_GAMEPAD;
 use crate::gamepad_values::GamepadValues1;
-use crate::hidimpl::battery_level_chrc::BatteryLevelChrc;
+use crate::hidimpl::battery_level_chrc::{BatteryLevelChrc, BatteryLevelChrcInterface};
 use crate::hidimpl::battery_service::{BatteryService, BatteryServiceInterface};
 use crate::hidimpl::ccc_desc::{CCCDescInterface, ClientCharacteristicConfigurationDesc};
 use crate::hidimpl::device_info_service::{DeviceInfoService, DeviceInfoServiceInterface};
@@ -20,6 +20,7 @@ use crate::hidimpl::report_ref_desc::{ReportReferenceDesc, ReportReferenceDescIn
 use crate::hidimpl::serial_number_chrc::{SerialNumberChrc, SerialNumberChrcInterface};
 use crate::utils::ObjectPathTrait;
 use std::sync::{Arc, Mutex};
+use zbus::object_server::Interface;
 use zbus::{Connection, Error};
 
 pub fn create_advertisement(path: String) -> Advertisement {
@@ -55,12 +56,34 @@ pub async fn create_and_register_application(
     app.lock().unwrap().battery_service = Some(battery_service.clone());
     app.lock().unwrap().device_info_service = Some(device_info_service.clone());
 
-    connection
-        .object_server()
-        .at(app.lock().unwrap().object_path().clone(), app_interface)
-        .await?;
+    let app_object_path = app.lock().unwrap().object_path().clone();
+    register_object(connection, app_object_path, app_interface).await?;
 
     Ok(())
+}
+
+async fn register_object<T>(connection: &Connection, path: String, object: T) -> zbus::Result<()>
+where
+    T: Interface,
+{
+    let object_type = std::any::type_name::<T>();
+    println!(
+        "Registering object of type: {} at path {}",
+        object_type,
+        path.clone()
+    );
+
+    let result = match connection.object_server().at(path.clone(), object).await {
+        Ok(_) => {
+            println!("Registered object: {}", path);
+            Ok(())
+        }
+        Err(e) => {
+            println!("Error registering object: {}", e);
+            Err(e)
+        }
+    };
+    result
 }
 
 async fn get_device_info_service(
@@ -77,13 +100,14 @@ async fn get_device_info_service(
 
     let manufacturer_name_chrc_interface =
         ManufacturerNameChrcInterface(manufacturer_name_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            manufacturer_name_chrc.lock().unwrap().object_path().clone(),
-            manufacturer_name_chrc_interface,
-        )
-        .await?;
+    let manufacturer_name_chrc_path = manufacturer_name_chrc.lock().unwrap().object_path().clone();
+
+    register_object(
+        connection,
+        manufacturer_name_chrc_path.clone(),
+        manufacturer_name_chrc_interface,
+    )
+    .await?;
 
     let model_number_chrc = Arc::new(Mutex::new(ModelNumberChrc::new(
         format!("{}/char1", device_info_service_path.clone()),
@@ -91,13 +115,13 @@ async fn get_device_info_service(
     )));
 
     let model_number_chrc_interface = ModelNumberChrcInterface(model_number_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            model_number_chrc.lock().unwrap().object_path().clone(),
-            model_number_chrc_interface,
-        )
-        .await?;
+    let model_number_chrc_path = model_number_chrc.lock().unwrap().object_path().clone();
+    register_object(
+        connection,
+        model_number_chrc_path.clone(),
+        model_number_chrc_interface,
+    )
+    .await?;
 
     let serial_number_chrc = Arc::new(Mutex::new(SerialNumberChrc::new(
         format!("{}/char2", device_info_service_path.clone()),
@@ -105,13 +129,13 @@ async fn get_device_info_service(
     )));
 
     let serial_number_chrc_interface = SerialNumberChrcInterface(serial_number_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            serial_number_chrc.lock().unwrap().object_path().clone(),
-            serial_number_chrc_interface,
-        )
-        .await?;
+    let serial_number_chrc_path = serial_number_chrc.lock().unwrap().object_path().clone();
+    register_object(
+        connection,
+        serial_number_chrc_path.clone(),
+        serial_number_chrc_interface,
+    )
+    .await?;
 
     let hardware_revision_chrc = Arc::new(Mutex::new(HardwareRevisionChrc::new(
         format!("{}/char3", device_info_service_path.clone()),
@@ -120,13 +144,13 @@ async fn get_device_info_service(
 
     let hardware_revision_chrc_interface =
         HardwareRevisionChrcInterface(hardware_revision_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            hardware_revision_chrc.lock().unwrap().object_path().clone(),
-            hardware_revision_chrc_interface,
-        )
-        .await?;
+    let hardware_revision_chrc_path = hardware_revision_chrc.lock().unwrap().object_path().clone();
+    register_object(
+        connection,
+        hardware_revision_chrc_path.clone(),
+        hardware_revision_chrc_interface,
+    )
+    .await?;
 
     let pnp_id_chrc = Arc::new(Mutex::new(PnpIdChrc::new(
         format!("{}/char4", device_info_service_path.clone()),
@@ -134,13 +158,8 @@ async fn get_device_info_service(
     )));
 
     let pnp_id_chrc_interface = PnpIdChrcInterface(pnp_id_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            pnp_id_chrc.lock().unwrap().object_path().clone(),
-            pnp_id_chrc_interface,
-        )
-        .await?;
+    let pnp_id_chrc_path = pnp_id_chrc.lock().unwrap().object_path().clone();
+    register_object(connection, pnp_id_chrc_path.clone(), pnp_id_chrc_interface).await?;
 
     device_info_service
         .lock()
@@ -164,14 +183,13 @@ async fn get_device_info_service(
         .add_characteristic_path(pnp_id_chrc.lock().unwrap().object_path().clone());
 
     let device_info_service_interface = DeviceInfoServiceInterface(device_info_service.clone());
-
-    connection
-        .object_server()
-        .at(
-            device_info_service_path.clone(),
-            device_info_service_interface,
-        )
-        .await?;
+    let device_info_service_path = device_info_service.lock().unwrap().object_path().clone();
+    register_object(
+        connection,
+        device_info_service_path.clone(),
+        device_info_service_interface,
+    )
+    .await?;
 
     Ok(device_info_service)
 }
@@ -186,17 +204,30 @@ async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<Batter
         battery_service_path.clone(),
     )));
 
+    let battery_level_chrc_interface = BatteryLevelChrcInterface(battery_level_chrc.clone());
+    let battery_level_chrc_path = battery_level_chrc.lock().unwrap().object_path().clone();
+
+    register_object(
+        connection,
+        battery_level_chrc_path.clone(),
+        battery_level_chrc_interface,
+    )
+    .await?;
+
     battery_service
         .lock()
         .unwrap()
         .add_characteristic_path(battery_level_chrc.lock().unwrap().object_path().clone());
 
     let battery_service_interface = BatteryServiceInterface(battery_service.clone());
+    let battery_service_path = battery_service.lock().unwrap().object_path().clone();
 
-    connection
-        .object_server()
-        .at(battery_service_path.clone(), battery_service_interface)
-        .await?;
+    register_object(
+        connection,
+        battery_service_path.clone(),
+        battery_service_interface,
+    )
+    .await?;
 
     Ok(battery_service)
 }
@@ -213,10 +244,12 @@ async fn get_report_map_chrc(
     )));
     let report_map_object_path = report_map_chrc.lock().unwrap().object_path().clone();
     let report_map_chrc_interface = ReportMapChrcInterface(report_map_chrc.clone());
-    connection
-        .object_server()
-        .at(report_map_object_path, report_map_chrc_interface)
-        .await?;
+    register_object(
+        connection,
+        report_map_object_path.clone(),
+        report_map_chrc_interface,
+    )
+    .await?;
 
     Ok(report_map_chrc)
 }
@@ -260,20 +293,10 @@ async fn get_report_chrc(
         .unwrap()
         .add_descriptor_path(rr_desc_path.clone());
 
-    connection
-        .object_server()
-        .at(report_chrc_path, report_chrc_interface)
-        .await?;
+    register_object(connection, ccc_desc_path.clone(), ccc_desc_interface).await?;
+    register_object(connection, rr_desc_path.clone(), rr_desc_interface).await?;
 
-    connection
-        .object_server()
-        .at(ccc_desc_path, ccc_desc_interface)
-        .await?;
-
-    connection
-        .object_server()
-        .at(rr_desc_path, rr_desc_interface)
-        .await?;
+    register_object(connection, report_chrc_path.clone(), report_chrc_interface).await?;
 
     Ok(report_chrc)
 }
@@ -288,10 +311,12 @@ async fn get_protocol_mode_chrc(
     )));
     let protocol_mode_object_path = protocol_mode_chrc.lock().unwrap().object_path().clone();
     let protocol_mode_chrc_interface = ProtocolModeChrcInterface(protocol_mode_chrc.clone());
-    connection
-        .object_server()
-        .at(protocol_mode_object_path, protocol_mode_chrc_interface)
-        .await?;
+    register_object(
+        connection,
+        protocol_mode_object_path.clone(),
+        protocol_mode_chrc_interface,
+    )
+    .await?;
 
     Ok(protocol_mode_chrc)
 }
@@ -306,10 +331,12 @@ async fn get_hid_info_chrc(
     )));
     let hid_info_object_path = hid_info_chrc.lock().unwrap().object_path().clone();
     let hid_info_chrc_interface = HidInfoChrcInterface(hid_info_chrc.clone());
-    connection
-        .object_server()
-        .at(hid_info_object_path, hid_info_chrc_interface)
-        .await?;
+    register_object(
+        connection,
+        hid_info_object_path.clone(),
+        hid_info_chrc_interface,
+    )
+    .await?;
 
     Ok(hid_info_chrc)
 }
@@ -326,13 +353,12 @@ async fn get_hid_control_point(
         hid_control_point_chrc.lock().unwrap().object_path().clone();
     let hid_control_point_chrc_interface =
         HidControlPointChrcInterface(hid_control_point_chrc.clone());
-    connection
-        .object_server()
-        .at(
-            hid_control_point_object_path,
-            hid_control_point_chrc_interface,
-        )
-        .await?;
+    register_object(
+        connection,
+        hid_control_point_object_path.clone(),
+        hid_control_point_chrc_interface,
+    )
+    .await?;
 
     Ok(hid_control_point_chrc)
 }

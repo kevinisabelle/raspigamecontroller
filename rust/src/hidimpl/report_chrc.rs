@@ -6,7 +6,7 @@ use crate::utils::ObjectPathTrait;
 use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use zbus::{interface, Error};
+use zbus::interface;
 use zbus::object_server::SignalEmitter;
 
 #[derive(Debug)]
@@ -92,23 +92,47 @@ impl ReportChrcInterface {
         println!("Report stop notify called");
         Ok(())
     }
-}
 
-#[interface(name = "org.freedesktop.DBus.Properties")]
-impl ReportChrcInterface {
     #[zbus(signal)]
-    pub async fn notify(&mut self, signal_emitter: &SignalEmitter) -> Result<(), Error> {
-        let report = self.0.lock().unwrap().gamepad_values.lock().unwrap().get_report().clone();
-        let result = signal_emitter.emit( "PropertiesChanged", &"org.bluez.GattCharacteristic1", &["Value"], &[&report])?;
-        
+    //async fn properties_changed(&self) -> zbus::Result<()>;
+
+    pub async fn notify(&mut self, signal_emitter: SignalEmitter<'_>) -> zbus::Result<()> {
+        let report = self
+            .0
+            .lock()
+            .unwrap()
+            .gamepad_values
+            .lock()
+            .unwrap()
+            .get_report();
+
         println!(
-            "Report notify called, Hex: {}",
+            "Sending notification with values. Hex: {}",
             report
                 .iter()
                 .map(|b| format!("{:02X}", b))
                 .collect::<Vec<_>>()
                 .join(" ")
         );
+
+        let mut changed = HashMap::new();
+        changed.insert("Value", Value::from(report));
+
+        let interface_name = InterfaceName::try_from("org.freedesktop.DBus.Properties").unwrap();
+        // No invalidated properties.
+        let invalidated_properties = Cow::Borrowed(&[] as &[_]);
+
+        // Emit the signal.
+        let result = Properties::properties_changed(
+            &signal_emitter,
+            interface_name,
+            changed,
+            invalidated_properties,
+        )
+        .await;
+
+        println!("Properties::properties_changed result: {:?}", result);
+
         Ok(())
     }
 }
