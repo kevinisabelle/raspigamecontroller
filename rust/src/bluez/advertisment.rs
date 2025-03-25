@@ -3,8 +3,7 @@ use crate::utils::ObjectPathTrait;
 use std::collections::HashMap;
 use zbus::{fdo, interface, Connection, Proxy};
 
-#[derive(Default)]
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Advertisement {
     pub path: String,
     ad_type: String,
@@ -61,31 +60,52 @@ impl Advertisement {
 
     #[zbus(property, name = "Type")]
     pub fn get_type(&self) -> &str {
+        println!("advertisment get_type: {:?}", self.ad_type);
         &self.ad_type
     }
 
     #[zbus(property, name = "ServiceUUIDs")]
     pub fn get_service_uuids(&self) -> Vec<String> {
+        println!(
+            "advertisment get_service_uuids: {:?}",
+            self.service_uuids.clone().unwrap_or_default()
+        );
         self.service_uuids.clone().unwrap_or_default()
     }
 
     #[zbus(property, name = "ManufacturerData")]
     pub fn get_manufacturer_data(&self) -> HashMap<u16, Vec<u8>> {
+        println!(
+            "advertisment get_manufacturer_data: {:?}",
+            self.manufacturer_data.clone().unwrap_or_default()
+        );
         self.manufacturer_data.clone().unwrap_or_default()
     }
 
     #[zbus(property, name = "SolicitUUIDs")]
     pub fn get_solicit_uuids(&self) -> Vec<String> {
+        println!(
+            "advertisment get_solicit_uuids: {:?}",
+            self.solicit_uuids.clone().unwrap_or_default()
+        );
         self.solicit_uuids.clone().unwrap_or_default()
     }
 
     #[zbus(property, name = "ServiceData")]
     pub fn get_service_data(&self) -> HashMap<String, Vec<u8>> {
+        println!(
+            "advertisment get_service_data: {:?}",
+            self.service_data.clone().unwrap_or_default()
+        );
         self.service_data.clone().unwrap_or_default()
     }
 
     #[zbus(property, name = "LocalName")]
     pub fn get_local_name(&self) -> String {
+        println!(
+            "advertisment get_local_name: {:?}",
+            self.local_name.clone().unwrap_or_default()
+        );
         self.local_name.clone().unwrap_or_default()
     }
 
@@ -97,14 +117,22 @@ impl Advertisement {
             Vec::new()
         }
     }
-    
+
     #[zbus(property, name = "Data")]
     pub fn get_data(&self) -> HashMap<u8, Vec<u8>> {
+        println!(
+            "advertisment get_data: {:?}",
+            self.data.clone().unwrap_or_default()
+        );
         self.data.clone().unwrap_or_default()
     }
-    
+
     #[zbus(property, name = "Appearance")]
     pub fn get_appearance(&self) -> u16 {
+        println!(
+            "advertisment get_appearance: {:#X}",
+            self.appearance.clone().unwrap_or_default()
+        );
         self.appearance.unwrap_or_default()
     }
 }

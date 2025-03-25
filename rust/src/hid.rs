@@ -5,7 +5,7 @@ use crate::hidimpl::battery_level_chrc::{BatteryLevelChrc, BatteryLevelChrcInter
 use crate::hidimpl::battery_service::{BatteryService, BatteryServiceInterface};
 use crate::hidimpl::ccc_desc::{CCCDescInterface, ClientCharacteristicConfigurationDesc};
 use crate::hidimpl::device_info_service::{DeviceInfoService, DeviceInfoServiceInterface};
-use crate::hidimpl::gatt_application::{GattApplication, GattApplicationInterface};
+use crate::hidimpl::gatt_application::{GattApplication, GattApplicationInterface, ObjectManagerInterface};
 use crate::hidimpl::hardware_revision_chrc::{HardwareRevisionChrc, HardwareRevisionChrcInterface};
 use crate::hidimpl::hid_control_point_chrc::{HidControlPointChrc, HidControlPointChrcInterface};
 use crate::hidimpl::hid_info_chrc::{HidInfoChrc, HidInfoChrcInterface};
@@ -19,22 +19,23 @@ use crate::hidimpl::report_map_chrc::{ReportMapChrc, ReportMapChrcInterface};
 use crate::hidimpl::report_ref_desc::{ReportReferenceDesc, ReportReferenceDescInterface};
 use crate::hidimpl::serial_number_chrc::{SerialNumberChrc, SerialNumberChrcInterface};
 use crate::utils::ObjectPathTrait;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::object_server::Interface;
-use zbus::{Connection, Error};
+use zbus::{proxy, Connection, Error, Proxy};
 
 pub fn create_advertisement(path: String) -> Advertisement {
     let adv = Advertisement::new(
         path,
         "peripheral".to_string(),
-        Option::from(vec!["1812".to_string()]),
+        Some(vec!["1812".to_string()]),
         None,
         None,
         None,
-        Option::from("KiGP".to_string()),
+        Some("KiGP2".to_string()),
         true,
         None,
-        Option::from(ADV_APPEARANCE_GAMEPAD),
+        Some(ADV_APPEARANCE_GAMEPAD),
     );
     adv
 }
@@ -45,8 +46,9 @@ pub async fn create_and_register_application(
 ) -> zbus::Result<()> {
     println!("Creating GattApplication");
 
-    let app = Arc::new(Mutex::new(GattApplication::new("/app".to_string())));
+    let app = Arc::new(Mutex::new(GattApplication::new("/".to_string())));
     let app_interface = GattApplicationInterface(app.clone());
+    let app_object_manager_interface = ObjectManagerInterface(app.clone());
 
     let hid_service = get_hid_service(connection, gamepad_values.clone()).await?;
     let battery_service = get_battery_service(connection).await?;
@@ -57,9 +59,63 @@ pub async fn create_and_register_application(
     app.lock().unwrap().device_info_service = Some(device_info_service.clone());
 
     let app_object_path = app.lock().unwrap().object_path().clone();
-    register_object(connection, app_object_path, app_interface).await?;
+    register_object(connection, app_object_path.clone(), app_interface).await?;
+    register_object(connection, app_object_path.clone(), app_object_manager_interface).await?;
+    register_application(connection, app_object_path.clone().as_str()).await?;
 
     Ok(())
+}
+
+#[proxy(
+    interface = "org.bluez.GattManager1",
+    default_service = "org.bluez",
+    default_path = "/org/bluez/hci0"
+)]
+trait GattManager {
+    fn register_application(
+        &self,
+        application: zbus::zvariant::ObjectPath<'_>,
+        options: std::collections::HashMap<String, zbus::zvariant::Value<'_>>,
+    ) -> zbus::Result<()>;
+}
+
+pub async fn register_application(connection: &Connection, app_path: &str) -> zbus::Result<()> {
+    let adapter_path = find_adapter(connection).await?;
+
+    let gatt_manager: Proxy = Proxy::new(
+        connection,
+        "org.bluez",
+        adapter_path,
+        "org.bluez.GattManager1",
+    )
+    .await?;
+
+    // Create an empty dictionary for the options.
+    let options: HashMap<String, zbus::zvariant::Value> = HashMap::new();
+    let app_object_path = zbus::zvariant::ObjectPath::try_from(app_path)?;
+
+    // Call the RegisterApplication method.
+    let result = gatt_manager
+        .call_method("RegisterApplication", &(app_object_path, options))
+        .await?;
+
+    println!("Registered application: {:?}", result);
+
+    Ok(())
+}
+
+async fn find_adapter(connection: &Connection) -> Result<String, Error> {
+    let proxy = zbus::fdo::ObjectManagerProxy::new(connection, "org.bluez", "/").await?;
+    let objects = proxy.get_managed_objects().await?;
+
+    for (path, interfaces) in objects {
+        if interfaces.contains_key("org.bluez.GattManager1") {
+            println!("Found GattManager1 at path: {}", path);
+            return Ok(path.to_string());
+        }
+    }
+
+    panic!("No adapter found");
 }
 
 async fn register_object<T>(connection: &Connection, path: String, object: T) -> zbus::Result<()>
@@ -88,8 +144,10 @@ where
 
 async fn get_device_info_service(
     connection: &Connection,
-) -> Result<Arc<Mutex<DeviceInfoService>>, Error> {
-    let device_info_service = Arc::new(Mutex::new(DeviceInfoService::new("/service1".to_string())));
+) -> zbus::Result<Arc<Mutex<DeviceInfoService>>> {
+    let device_info_service = Arc::new(Mutex::new(DeviceInfoService::new(
+        "/org/bluez/gamepadki/service1".to_string(),
+    )));
 
     let device_info_service_path = device_info_service.lock().unwrap().object_path().clone();
 
@@ -181,6 +239,12 @@ async fn get_device_info_service(
         .lock()
         .unwrap()
         .add_characteristic_path(pnp_id_chrc.lock().unwrap().object_path().clone());
+    
+    device_info_service.lock().unwrap().manufacturer_name_chrc = Some(manufacturer_name_chrc.clone());
+    device_info_service.lock().unwrap().model_number_chrc = Some(model_number_chrc.clone());
+    device_info_service.lock().unwrap().serial_number_chrc = Some(serial_number_chrc.clone());
+    device_info_service.lock().unwrap().hardware_revision_chrc = Some(hardware_revision_chrc.clone());
+    device_info_service.lock().unwrap().pnp_id_chrc = Some(pnp_id_chrc.clone());
 
     let device_info_service_interface = DeviceInfoServiceInterface(device_info_service.clone());
     let device_info_service_path = device_info_service.lock().unwrap().object_path().clone();
@@ -195,7 +259,9 @@ async fn get_device_info_service(
 }
 
 async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<BatteryService>>, Error> {
-    let battery_service = Arc::new(Mutex::new(BatteryService::new("/service2".to_string())));
+    let battery_service = Arc::new(Mutex::new(BatteryService::new(
+        "/org/bluez/gamepadki/service2".to_string(),
+    )));
 
     let battery_service_path = battery_service.lock().unwrap().object_path().clone();
 
@@ -203,6 +269,8 @@ async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<Batter
         format!("{}/char0", battery_service_path.clone()),
         battery_service_path.clone(),
     )));
+    
+    battery_service.lock().unwrap().battery_level_chrc = Some(battery_level_chrc.clone());
 
     let battery_level_chrc_interface = BatteryLevelChrcInterface(battery_level_chrc.clone());
     let battery_level_chrc_path = battery_level_chrc.lock().unwrap().object_path().clone();
@@ -292,6 +360,9 @@ async fn get_report_chrc(
         .lock()
         .unwrap()
         .add_descriptor_path(rr_desc_path.clone());
+    
+    report_chrc.lock().unwrap().ccc_desc = Some(ccc_desc.clone());
+    report_chrc.lock().unwrap().rr_desc = Some(rr_desc.clone());
 
     register_object(connection, ccc_desc_path.clone(), ccc_desc_interface).await?;
     register_object(connection, rr_desc_path.clone(), rr_desc_interface).await?;
@@ -367,7 +438,9 @@ async fn get_hid_service(
     connection: &Connection,
     gamepad_values: Arc<Mutex<GamepadValues1>>,
 ) -> Result<Arc<Mutex<HidService>>, Error> {
-    let hid_service = Arc::new(Mutex::new(HidService::new("/service0".to_string())));
+    let hid_service = Arc::new(Mutex::new(HidService::new(
+        "/org/bluez/gamepadki/service0".to_string(),
+    )));
     let hid_service_path = hid_service.lock().unwrap().object_path().clone();
 
     let report_map_chrc =
@@ -404,6 +477,12 @@ async fn get_hid_service(
         .unwrap()
         .add_characteristic_path(hid_control_point_chrc.lock().unwrap().object_path().clone());
 
+    hid_service.lock().unwrap().report_chrc = Some(report_chrc.clone());
+    hid_service.lock().unwrap().reportmap_chrc = Some(report_map_chrc.clone());
+    hid_service.lock().unwrap().protocol_mode_chrc = Some(protocol_mode_chrc.clone());
+    hid_service.lock().unwrap().hid_info_chrc = Some(hid_info_chrc.clone());
+    hid_service.lock().unwrap().hid_control_point_chrc = Some(hid_control_point_chrc.clone());
+    
     let hid_service_interface = HidServiceInterface(hid_service.clone());
 
     connection

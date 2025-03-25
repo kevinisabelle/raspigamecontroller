@@ -16,22 +16,30 @@ pub fn gatt_characteristic(attr: TokenStream, item: TokenStream) -> TokenStream 
     let methods = quote! {
         #[zbus(property)]
         fn get_flags(&self) -> Vec<String> {
-            self.0.lock().unwrap().base.flags.clone()
+            let flags = self.0.lock().unwrap().base.flags.clone();
+            println!("Get Flags: {:?} from { }", flags, self.0.lock().unwrap().base.uuid.clone());
+            flags
         }
 
         #[zbus(property)]
         fn get_uuid(&self) -> String {
-            self.0.lock().unwrap().base.uuid.clone()
+            let uuid = self.0.lock().unwrap().base.uuid.clone();
+            println!("Get UUID: {:?} from { }", uuid, self.0.lock().unwrap().base.uuid.clone());
+            uuid
         }
 
         #[zbus(property)]
         fn get_service(&self) -> String {
-            self.0.lock().unwrap().base.service.clone()
+            let service = self.0.lock().unwrap().base.service.clone();
+            println!("Get Service: {:?} from { }", service, self.0.lock().unwrap().base.uuid.clone());
+            service
         }
 
         #[zbus(property)]
         fn get_descriptors(&self) -> Vec<String> {
-            self.0.lock().unwrap().base.descriptors.clone()
+            let descriptors = self.0.lock().unwrap().base.descriptors.clone();
+            println!("Get Descriptors: {:?} from { }", descriptors, self.0.lock().unwrap().base.uuid.clone());
+            descriptors
         }
     };
 

@@ -1,18 +1,25 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::GATT_REPORT_UUID;
 use crate::gamepad_values::GamepadValues1;
-use crate::object_path;
-use crate::utils::ObjectPathTrait;
+use crate::hidimpl::ccc_desc::ClientCharacteristicConfigurationDesc;
+use crate::hidimpl::report_ref_desc::ReportReferenceDesc;
+use crate::utils::{ObjectInterfaces, ObjectPathTrait};
+use crate::{extend_chrc_props, extend_option_prop, object_path};
 use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
 use zbus::object_server::SignalEmitter;
+use zbus::zvariant::OwnedValue;
+use zbus::zvariant::Value;
 
 #[derive(Debug)]
 pub struct ReportChrc {
     pub base: BaseGattCharacteristic,
     pub gamepad_values: Arc<Mutex<GamepadValues1>>,
+    pub rr_desc: Option<Arc<Mutex<ReportReferenceDesc>>>,
+    pub ccc_desc: Option<Arc<Mutex<ClientCharacteristicConfigurationDesc>>>,
+
     pub notifying: bool,
 }
 
@@ -26,6 +33,8 @@ object_path! {
                 base: BaseGattCharacteristic::new(path.clone(), uuid, flags, service, vec![]),
                 gamepad_values,
                 notifying: false,
+                rr_desc: None,
+                ccc_desc: None,
             }
         }
 
@@ -43,6 +52,19 @@ object_path! {
                     .collect::<Vec<_>>()
                     .join(" ")
             );
+        }
+
+        pub fn get_properties(&self) -> ObjectInterfaces {
+
+            let mut properties = HashMap::new();
+            let owned_value = OwnedValue::try_from(Value::from(self.gamepad_values.lock().unwrap().get_report().clone())).unwrap();
+
+            extend_chrc_props!(&self, properties, owned_value);
+
+            extend_option_prop!(&self.ccc_desc, properties);
+            extend_option_prop!(&self.rr_desc, properties);
+
+            properties
         }
     }
 }

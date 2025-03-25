@@ -1,15 +1,17 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
 use crate::constants::GATT_HID_CONTROL_POINT_UUID;
-use crate::object_path;
-use crate::utils::ObjectPathTrait;
+use crate::{extend_chrc_props, object_path};
+use crate::utils::{ObjectInterfaces, ObjectPathTrait};
 use macros::{gatt_characteristic};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
+use zbus::zvariant::{OwnedValue, Value};
 
 #[derive(Debug)]
 pub struct HidControlPointChrc {
     pub base: BaseGattCharacteristic,
+    pub value: Vec<u8>,
 }
 
 object_path! {
@@ -19,7 +21,18 @@ object_path! {
             let flags = vec!["write".to_string()];
             Self {
                 base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
+                value: vec![0x00],
             }
+        }
+        
+        pub fn get_properties(&self) -> ObjectInterfaces {
+
+            let mut properties = HashMap::new();
+            let owned_value = OwnedValue::try_from(Value::from(self.value.clone())).unwrap();
+
+            extend_chrc_props!(&self, properties, owned_value);
+
+            properties
         }
     }
 }
@@ -41,6 +54,7 @@ impl HidControlPointChrcInterface {
                 .collect::<Vec<_>>()
                 .join(" ")
         );
+        self.0.lock().unwrap().value = value;
         Ok(())
     }
 }

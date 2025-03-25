@@ -1,8 +1,8 @@
 ﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
-use crate::constants::GATT_DESC_CLIENT_DESCRIPTOR_UUID;
-use crate::object_path;
-use crate::utils::ObjectPathTrait;
-use macros::{gatt_descriptor};
+use crate::constants::{GATT_DESCRIPTOR_IFACE, GATT_DESC_CLIENT_DESCRIPTOR_UUID};
+use crate::utils::{InterfaceProperties, ObjectInterfaces, ObjectPathTrait, ObjectProperties};
+use crate::{descriptor_get_properties, object_path};
+use macros::gatt_descriptor;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
@@ -28,8 +28,8 @@ object_path! {
             }
         }
 
-        pub fn set_value(&mut self, value: Vec<u8>) {
-            self.value = value;
+        pub fn get_properties(&self) -> ObjectInterfaces {
+            descriptor_get_properties!(self)
         }
     }
 }
