@@ -1,5 +1,5 @@
 ﻿use std::collections::HashMap;
-use zbus::zvariant::{OwnedValue, Value};
+use zbus::zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Value};
 
 #[derive(Debug)]
 pub struct BaseGattCharacteristic {
@@ -39,7 +39,9 @@ impl BaseGattCharacteristic {
         );
         properties.insert(
             "Service".to_string(),
-            OwnedValue::try_from(Value::from(&self.service.clone())).unwrap(),
+            OwnedValue::try_from(
+                OwnedObjectPath::try_from(Value::from(&self.service)).unwrap(),
+            ).unwrap(),
         );
         properties.insert(
             "Descriptors".to_string(),
