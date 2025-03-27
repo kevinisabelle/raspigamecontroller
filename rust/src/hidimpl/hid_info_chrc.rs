@@ -41,7 +41,16 @@ pub(crate) struct HidInfoChrcInterface(pub Arc<Mutex<HidInfoChrc>>);
 
 #[gatt_characteristic()]
 impl HidInfoChrcInterface {
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(self.0.lock().unwrap().value.clone())
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
+        let value = self.0.lock().unwrap().value.clone();
+        println!(
+            "HID Information read handler called, Hex: {}",
+            value
+                .iter()
+                .map(|b| format!("{:02X}", b))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
+        Ok(value)
     }
 }

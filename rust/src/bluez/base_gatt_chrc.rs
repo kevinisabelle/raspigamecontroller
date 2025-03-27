@@ -40,7 +40,7 @@ impl BaseGattCharacteristic {
         properties.insert(
             "Service".to_string(),
             OwnedValue::try_from(
-                OwnedObjectPath::try_from(Value::from(&self.service)).unwrap(),
+                ObjectPath::try_from(self.service.clone()).unwrap(),
             ).unwrap(),
         );
         properties.insert(

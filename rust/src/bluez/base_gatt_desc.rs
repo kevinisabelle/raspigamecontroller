@@ -1,5 +1,5 @@
 ﻿use std::collections::HashMap;
-use zbus::zvariant::{OwnedValue, Value};
+use zbus::zvariant::{ObjectPath, OwnedValue, Value};
 use crate::utils::ObjectProperties;
 
 #[derive(Debug)]
@@ -32,7 +32,9 @@ impl BaseGattDescriptor {
         );
         properties.insert(
             "Characteristic".to_string(),
-            OwnedValue::try_from(Value::from(self.characteristic.clone())).unwrap(),
+            OwnedValue::try_from(
+                ObjectPath::try_from(self.characteristic.clone()).unwrap(),
+            ).unwrap(),
         );
 
         properties

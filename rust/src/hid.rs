@@ -43,7 +43,7 @@ pub fn create_advertisement(path: String) -> Advertisement {
 pub async fn create_and_register_application(
     connection: &Connection,
     gamepad_values: Arc<Mutex<GamepadValues1>>,
-) -> zbus::Result<()> {
+) -> zbus::Result<(Arc<Mutex<GattApplication>>)> {
     println!("Creating GattApplication");
 
     let app = Arc::new(Mutex::new(GattApplication::new("/".to_string())));
@@ -63,7 +63,7 @@ pub async fn create_and_register_application(
     register_object(connection, app_object_path.clone(), app_object_manager_interface).await?;
     register_application(connection, app_object_path.clone().as_str()).await?;
 
-    Ok(())
+    Ok(app.clone())
 }
 
 #[proxy(
@@ -146,13 +146,13 @@ async fn get_device_info_service(
     connection: &Connection,
 ) -> zbus::Result<Arc<Mutex<DeviceInfoService>>> {
     let device_info_service = Arc::new(Mutex::new(DeviceInfoService::new(
-        "/org/bluez/gamepadki/service1".to_string(),
+        "/org/bluez/gamepadki/devinfo_serv".to_string(),
     )));
 
     let device_info_service_path = device_info_service.lock().unwrap().object_path().clone();
 
     let manufacturer_name_chrc = Arc::new(Mutex::new(ManufacturerNameChrc::new(
-        format!("{}/char0", device_info_service_path.clone()),
+        format!("{}/man_name_ch", device_info_service_path.clone()),
         device_info_service_path.clone(),
     )));
 
@@ -168,7 +168,7 @@ async fn get_device_info_service(
     .await?;
 
     let model_number_chrc = Arc::new(Mutex::new(ModelNumberChrc::new(
-        format!("{}/char1", device_info_service_path.clone()),
+        format!("{}/mdl_nb_ch", device_info_service_path.clone()),
         device_info_service_path.clone(),
     )));
 
@@ -182,7 +182,7 @@ async fn get_device_info_service(
     .await?;
 
     let serial_number_chrc = Arc::new(Mutex::new(SerialNumberChrc::new(
-        format!("{}/char2", device_info_service_path.clone()),
+        format!("{}/srl_nb_ch", device_info_service_path.clone()),
         device_info_service_path.clone(),
     )));
 
@@ -196,7 +196,7 @@ async fn get_device_info_service(
     .await?;
 
     let hardware_revision_chrc = Arc::new(Mutex::new(HardwareRevisionChrc::new(
-        format!("{}/char3", device_info_service_path.clone()),
+        format!("{}/hard_rev_ch", device_info_service_path.clone()),
         device_info_service_path.clone(),
     )));
 
@@ -211,7 +211,7 @@ async fn get_device_info_service(
     .await?;
 
     let pnp_id_chrc = Arc::new(Mutex::new(PnpIdChrc::new(
-        format!("{}/char4", device_info_service_path.clone()),
+        format!("{}/pnp_id_ch", device_info_service_path.clone()),
         device_info_service_path.clone(),
     )));
 
@@ -260,13 +260,13 @@ async fn get_device_info_service(
 
 async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<BatteryService>>, Error> {
     let battery_service = Arc::new(Mutex::new(BatteryService::new(
-        "/org/bluez/gamepadki/service2".to_string(),
+        "/org/bluez/gamepadki/batt_service".to_string(),
     )));
 
     let battery_service_path = battery_service.lock().unwrap().object_path().clone();
 
     let battery_level_chrc = Arc::new(Mutex::new(BatteryLevelChrc::new(
-        format!("{}/char0", battery_service_path.clone()),
+        format!("{}/batt_lvl_ch", battery_service_path.clone()),
         battery_service_path.clone(),
     )));
     
@@ -306,7 +306,7 @@ async fn get_report_map_chrc(
     gamepad_values: Arc<Mutex<GamepadValues1>>,
 ) -> Result<Arc<Mutex<ReportMapChrc>>, Error> {
     let report_map_chrc = Arc::new(Mutex::new(ReportMapChrc::new(
-        format!("{}/char0", hid_service_path.clone()),
+        format!("{}/rpt_map_ch", hid_service_path.clone()),
         hid_service_path.clone(),
         gamepad_values.clone(),
     )));
@@ -328,7 +328,7 @@ async fn get_report_chrc(
     gamepad_values: Arc<Mutex<GamepadValues1>>,
 ) -> Result<Arc<Mutex<ReportChrc>>, Error> {
     let report_chrc = Arc::new(Mutex::new(ReportChrc::new(
-        format!("{}/char1", hid_service_path.clone()),
+        format!("{}/rpt_ch", hid_service_path.clone()),
         hid_service_path.clone(),
         gamepad_values,
     )));
@@ -338,11 +338,11 @@ async fn get_report_chrc(
     let report_chrc_path = report_chrc.lock().unwrap().object_path().clone();
 
     let ccc_desc = Arc::new(Mutex::new(ClientCharacteristicConfigurationDesc::new(
-        format!("{}/desc0", report_chrc_path.clone()),
+        format!("{}/ccc_desc", report_chrc_path.clone()),
         report_chrc_path.clone(),
     )));
     let rr_desc = Arc::new(Mutex::new(ReportReferenceDesc::new(
-        format!("{}/desc1", report_chrc_path.clone()),
+        format!("{}/rr_desc", report_chrc_path.clone()),
         report_chrc_path.clone(),
     )));
 
@@ -377,7 +377,7 @@ async fn get_protocol_mode_chrc(
     hid_service_path: String,
 ) -> Result<Arc<Mutex<ProtocolModeChrc>>, Error> {
     let protocol_mode_chrc = Arc::new(Mutex::new(ProtocolModeChrc::new(
-        format!("{}/char2", hid_service_path.clone()),
+        format!("{}/pmode_ch", hid_service_path.clone()),
         hid_service_path.clone(),
     )));
     let protocol_mode_object_path = protocol_mode_chrc.lock().unwrap().object_path().clone();
@@ -397,7 +397,7 @@ async fn get_hid_info_chrc(
     hid_service_path: String,
 ) -> Result<Arc<Mutex<HidInfoChrc>>, Error> {
     let hid_info_chrc = Arc::new(Mutex::new(HidInfoChrc::new(
-        format!("{}/char3", hid_service_path.clone()),
+        format!("{}/hid_inf_ch", hid_service_path.clone()),
         hid_service_path.clone(),
     )));
     let hid_info_object_path = hid_info_chrc.lock().unwrap().object_path().clone();
@@ -417,7 +417,7 @@ async fn get_hid_control_point(
     hid_service_path: String,
 ) -> Result<Arc<Mutex<HidControlPointChrc>>, Error> {
     let hid_control_point_chrc = Arc::new(Mutex::new(HidControlPointChrc::new(
-        format!("{}/char4", hid_service_path.clone()),
+        format!("{}/hid_cp_ch", hid_service_path.clone()),
         hid_service_path.clone(),
     )));
     let hid_control_point_object_path =
@@ -439,7 +439,7 @@ async fn get_hid_service(
     gamepad_values: Arc<Mutex<GamepadValues1>>,
 ) -> Result<Arc<Mutex<HidService>>, Error> {
     let hid_service = Arc::new(Mutex::new(HidService::new(
-        "/org/bluez/gamepadki/service0".to_string(),
+        "/org/bluez/gamepadki/hid_service".to_string(),
     )));
     let hid_service_path = hid_service.lock().unwrap().object_path().clone();
 

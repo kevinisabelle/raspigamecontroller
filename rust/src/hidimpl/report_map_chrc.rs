@@ -52,10 +52,20 @@ impl ReportMapChrcInterface {
             .lock()
             .unwrap()
             .get_report_map();
+        
+        println!(
+            "Report Map get handler called, Hex: {}",
+            report_map
+                .iter()
+                .map(|b| format!("{:02X}", b))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
+        
         report_map
     }
 
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u16>> {
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u16>> {
         let report_map = self
             .0
             .lock()

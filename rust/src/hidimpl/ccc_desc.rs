@@ -1,5 +1,5 @@
 ﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
-use crate::constants::{GATT_DESCRIPTOR_IFACE, GATT_DESC_CLIENT_DESCRIPTOR_UUID};
+use crate::constants::{GATT_DESC_CLIENT_DESCRIPTOR_UUID, GATT_DESCRIPTOR_IFACE};
 use crate::utils::{InterfaceProperties, ObjectInterfaces, ObjectPathTrait, ObjectProperties};
 use crate::{descriptor_get_properties, object_path};
 use macros::gatt_descriptor;
@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
+use zbus::zvariant::OwnedValue;
 
 #[derive(Debug)]
 pub struct ClientCharacteristicConfigurationDesc {
@@ -38,7 +39,7 @@ pub(crate) struct CCCDescInterface(pub Arc<Mutex<ClientCharacteristicConfigurati
 
 #[gatt_descriptor()]
 impl CCCDescInterface {
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())
     }
 

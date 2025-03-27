@@ -40,7 +40,7 @@ pub(crate) struct ManufacturerNameChrcInterface(pub Arc<Mutex<ManufacturerNameCh
 
 #[gatt_characteristic()]
 impl ManufacturerNameChrcInterface {
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())
     }
 }

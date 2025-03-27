@@ -1,5 +1,5 @@
 ﻿use std::collections::HashMap;
-use zbus::zvariant::{OwnedObjectPath, OwnedValue, Value};
+use zbus::zvariant::{ObjectPath, OwnedValue, Value};
 
 #[derive(Debug)]
 pub struct BaseGattService {
@@ -29,16 +29,18 @@ impl BaseGattService {
             "UUID".to_string(),
             OwnedValue::try_from(Value::from(&self.uuid.clone())).unwrap(),
         );
-        
-        let mut char_object_paths : Vec<OwnedObjectPath> = Vec::new();
-        
+
+        let mut char_object_paths: Vec<OwnedValue> = Vec::new();
+
         for char_path in &self.characteristics {
-            char_object_paths.push(OwnedObjectPath::try_from(char_path.clone()).unwrap());
+            let owned_path =
+                OwnedValue::try_from(ObjectPath::try_from(char_path.clone()).unwrap()).unwrap();
+            char_object_paths.push(owned_path);
         }
-        
+
         properties.insert(
             "Characteristics".to_string(),
-            OwnedValue::try_from(Value::from(char_object_paths)).unwrap(),
+            OwnedValue::try_from(Value::from(&char_object_paths)).unwrap(),
         );
 
         properties

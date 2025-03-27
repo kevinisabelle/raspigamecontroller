@@ -1,6 +1,6 @@
 ﻿use crate::bluez::base_gatt_chrc::BaseGattCharacteristic;
-use crate::{extend_chrc_props, object_path};
 use crate::utils::{ObjectInterfaces, ObjectPathTrait};
+use crate::{extend_chrc_props, object_path};
 use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -23,7 +23,7 @@ object_path! {
                 value: "GP".as_bytes().to_vec(),
             }
         }
-        
+
         pub fn get_properties(&self) -> ObjectInterfaces {
 
             let mut properties = HashMap::new();
@@ -40,7 +40,7 @@ pub(crate) struct ModelNumberChrcInterface(pub Arc<Mutex<ModelNumberChrc>>);
 
 #[gatt_characteristic()]
 impl ModelNumberChrcInterface {
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
         Ok(self.0.lock().unwrap().value.clone())
     }
 }

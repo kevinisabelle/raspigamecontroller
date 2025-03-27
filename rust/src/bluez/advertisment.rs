@@ -73,32 +73,32 @@ impl Advertisement {
         self.service_uuids.clone().unwrap_or_default()
     }
 
-    #[zbus(property, name = "ManufacturerData")]
+    /*#[zbus(property, name = "ManufacturerData")]
     pub fn get_manufacturer_data(&self) -> HashMap<u16, Vec<u8>> {
         println!(
             "advertisment get_manufacturer_data: {:?}",
             self.manufacturer_data.clone().unwrap_or_default()
         );
         self.manufacturer_data.clone().unwrap_or_default()
-    }
+    }*/
 
-    #[zbus(property, name = "SolicitUUIDs")]
+    /*#[zbus(property, name = "SolicitUUIDs")]
     pub fn get_solicit_uuids(&self) -> Vec<String> {
         println!(
             "advertisment get_solicit_uuids: {:?}",
             self.solicit_uuids.clone().unwrap_or_default()
         );
         self.solicit_uuids.clone().unwrap_or_default()
-    }
+    }*/
 
-    #[zbus(property, name = "ServiceData")]
+    /*#[zbus(property, name = "ServiceData")]
     pub fn get_service_data(&self) -> HashMap<String, Vec<u8>> {
         println!(
             "advertisment get_service_data: {:?}",
             self.service_data.clone().unwrap_or_default()
         );
         self.service_data.clone().unwrap_or_default()
-    }
+    }*/
 
     #[zbus(property, name = "LocalName")]
     pub fn get_local_name(&self) -> String {
@@ -118,14 +118,14 @@ impl Advertisement {
         }
     }
 
-    #[zbus(property, name = "Data")]
+    /*#[zbus(property, name = "Data")]
     pub fn get_data(&self) -> HashMap<u8, Vec<u8>> {
         println!(
             "advertisment get_data: {:?}",
             self.data.clone().unwrap_or_default()
         );
         self.data.clone().unwrap_or_default()
-    }
+    }*/
 
     #[zbus(property, name = "Appearance")]
     pub fn get_appearance(&self) -> u16 {

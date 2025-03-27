@@ -27,7 +27,7 @@ object_path! {
     impl ReportChrc {
         pub fn new(path: String, service: String, gamepad_values: Arc<Mutex<GamepadValues1>>) -> Self {
             let uuid = GATT_REPORT_UUID.to_string();
-            let flags = vec!["read".to_string(), "write".to_string()];
+            let flags = vec!["read".to_string(), "notify".to_string(), "write-without-response".to_string()];
 
             Self {
                 base: BaseGattCharacteristic::new(path.clone(), uuid, flags, service, vec![]),
@@ -73,7 +73,7 @@ pub(crate) struct ReportChrcInterface(pub Arc<Mutex<ReportChrc>>);
 
 #[gatt_characteristic()]
 impl ReportChrcInterface {
-    fn read_value(&self, _options: HashMap<String, String>) -> zbus::fdo::Result<Vec<u8>> {
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
         let gamepad_values = self.0.lock().unwrap().gamepad_values.clone();
         let report = gamepad_values.lock().unwrap().get_report().clone();
         println!(
