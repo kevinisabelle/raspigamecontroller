@@ -1,5 +1,5 @@
 ﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
-use crate::constants::{GATT_DESC_CLIENT_DESCRIPTOR_UUID, GATT_DESCRIPTOR_IFACE};
+use crate::constants::{GATT_DESC_CLIENT_DESCRIPTOR_UUID, GATT_DESCRIPTOR_IFACE, GATT_DESC_REPORT_REFERENCE_UUID};
 use crate::utils::{InterfaceProperties, ObjectInterfaces, ObjectPathTrait, ObjectProperties};
 use crate::{descriptor_get_properties, object_path};
 use macros::gatt_descriptor;
@@ -20,7 +20,7 @@ object_path! {
             Self {
                 base: BaseGattDescriptor::new(
                     path,
-                    GATT_DESC_CLIENT_DESCRIPTOR_UUID.to_string(),
+                    GATT_DESC_REPORT_REFERENCE_UUID.to_string(),
                     vec!["read".to_string()],
                     characteristic,
                 ),

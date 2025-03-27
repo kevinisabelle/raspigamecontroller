@@ -58,7 +58,7 @@ impl ProtocolModeChrcInterface {
     fn write_value(
         &mut self,
         value: Vec<u8>,
-        _options: HashMap<String, String>,
+        _options: HashMap<String, OwnedValue>,
     ) -> zbus::fdo::Result<()> {
         println!(
             "Protocol Mode write handler called, Hex: {}",

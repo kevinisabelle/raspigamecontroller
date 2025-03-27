@@ -1,5 +1,5 @@
 ﻿use crate::bluez::base_gatt_desc::BaseGattDescriptor;
-use crate::constants::{GATT_DESC_CLIENT_DESCRIPTOR_UUID, GATT_DESCRIPTOR_IFACE};
+use crate::constants::{GATT_DESCRIPTOR_IFACE, GATT_DESC_CLIENT_DESCRIPTOR_UUID};
 use crate::utils::{InterfaceProperties, ObjectInterfaces, ObjectPathTrait, ObjectProperties};
 use crate::{descriptor_get_properties, object_path};
 use macros::gatt_descriptor;
@@ -40,13 +40,22 @@ pub(crate) struct CCCDescInterface(pub Arc<Mutex<ClientCharacteristicConfigurati
 #[gatt_descriptor()]
 impl CCCDescInterface {
     fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(self.0.lock().unwrap().value.clone())
+        let value = self.0.lock().unwrap().value.clone();
+        println!(
+            "Client Characteristic Configuration Descriptor read handler called, Hex: {}",
+            value
+                .iter()
+                .map(|b| format!("{:02X}", b))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
+        Ok(value)
     }
 
     fn write_value(
         &mut self,
         value: Vec<u8>,
-        _options: HashMap<String, String>,
+        _options: HashMap<String, OwnedValue>,
     ) -> zbus::fdo::Result<()> {
         println!(
             "Client Characteristic Configuration Descriptor write handler called, Hex: {}",

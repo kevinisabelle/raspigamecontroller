@@ -104,7 +104,7 @@ impl GamepadValues1 {
         self.axis_vx0 = value & 0xFF;
     }
 
-    pub fn get_report_map(&self) -> Vec<u16> {
+    pub fn get_report_map(&self) -> Vec<u8> {
         // Return a sample report map (in a real use-case, return actual map bytes).
         vec![
             0x05, 0x01, // Usage Page (Generic Desktop Controls)

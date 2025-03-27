@@ -90,7 +90,7 @@ impl ReportChrcInterface {
     fn write_value(
         &mut self,
         value: Vec<u8>,
-        _options: HashMap<String, String>,
+        _options: HashMap<String, OwnedValue>,
     ) -> zbus::fdo::Result<()> {
         println!(
             "Report write handler called, Hex: {}",
