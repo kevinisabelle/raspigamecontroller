@@ -20,14 +20,14 @@ object_path! {
             let flags = vec!["read".to_string()];
             Self {
                 base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
-                value: 100,
+                value: 0x64,
             }
         }
 
         pub fn get_properties(&self) -> ObjectInterfaces {
 
             let mut properties = HashMap::new();
-            let owned_value = OwnedValue::try_from(Value::from(self.value.clone())).unwrap();
+            let owned_value = OwnedValue::try_from(Value::from(vec![self.value.clone()])).unwrap();
 
             extend_chrc_props!(&self, properties, owned_value);
 
@@ -40,7 +40,7 @@ pub(crate) struct BatteryLevelChrcInterface(pub Arc<Mutex<BatteryLevelChrc>>);
 
 #[gatt_characteristic()]
 impl BatteryLevelChrcInterface {
-    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<u8> {
-        Ok(self.0.lock().unwrap().value)
+    fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
+        Ok(vec![self.0.lock().unwrap().value.clone()])
     }
 }

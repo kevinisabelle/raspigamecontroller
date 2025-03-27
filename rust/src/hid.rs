@@ -5,7 +5,9 @@ use crate::hidimpl::battery_level_chrc::{BatteryLevelChrc, BatteryLevelChrcInter
 use crate::hidimpl::battery_service::{BatteryService, BatteryServiceInterface};
 use crate::hidimpl::ccc_desc::{CCCDescInterface, ClientCharacteristicConfigurationDesc};
 use crate::hidimpl::device_info_service::{DeviceInfoService, DeviceInfoServiceInterface};
-use crate::hidimpl::gatt_application::{GattApplication, GattApplicationInterface, ObjectManagerInterface};
+use crate::hidimpl::gatt_application::{
+    GattApplication, GattApplicationInterface, ObjectManagerInterface,
+};
 use crate::hidimpl::hardware_revision_chrc::{HardwareRevisionChrc, HardwareRevisionChrcInterface};
 use crate::hidimpl::hid_control_point_chrc::{HidControlPointChrc, HidControlPointChrcInterface};
 use crate::hidimpl::hid_info_chrc::{HidInfoChrc, HidInfoChrcInterface};
@@ -60,7 +62,12 @@ pub async fn create_and_register_application(
 
     let app_object_path = app.lock().unwrap().object_path().clone();
     register_object(connection, app_object_path.clone(), app_interface).await?;
-    register_object(connection, app_object_path.clone(), app_object_manager_interface).await?;
+    register_object(
+        connection,
+        app_object_path.clone(),
+        app_object_manager_interface,
+    )
+    .await?;
     register_application(connection, app_object_path.clone().as_str()).await?;
 
     Ok(app.clone())
@@ -239,11 +246,13 @@ async fn get_device_info_service(
         .lock()
         .unwrap()
         .add_characteristic_path(pnp_id_chrc.lock().unwrap().object_path().clone());
-    
-    device_info_service.lock().unwrap().manufacturer_name_chrc = Some(manufacturer_name_chrc.clone());
+
+    device_info_service.lock().unwrap().manufacturer_name_chrc =
+        Some(manufacturer_name_chrc.clone());
     device_info_service.lock().unwrap().model_number_chrc = Some(model_number_chrc.clone());
     device_info_service.lock().unwrap().serial_number_chrc = Some(serial_number_chrc.clone());
-    device_info_service.lock().unwrap().hardware_revision_chrc = Some(hardware_revision_chrc.clone());
+    device_info_service.lock().unwrap().hardware_revision_chrc =
+        Some(hardware_revision_chrc.clone());
     device_info_service.lock().unwrap().pnp_id_chrc = Some(pnp_id_chrc.clone());
 
     let device_info_service_interface = DeviceInfoServiceInterface(device_info_service.clone());
@@ -269,7 +278,12 @@ async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<Batter
         format!("{}/batt_lvl_ch", battery_service_path.clone()),
         battery_service_path.clone(),
     )));
-    
+
+    battery_service
+        .lock()
+        .unwrap()
+        .add_characteristic_path(battery_level_chrc.lock().unwrap().object_path().clone());
+
     battery_service.lock().unwrap().battery_level_chrc = Some(battery_level_chrc.clone());
 
     let battery_level_chrc_interface = BatteryLevelChrcInterface(battery_level_chrc.clone());
@@ -281,11 +295,6 @@ async fn get_battery_service(connection: &Connection) -> Result<Arc<Mutex<Batter
         battery_level_chrc_interface,
     )
     .await?;
-
-    battery_service
-        .lock()
-        .unwrap()
-        .add_characteristic_path(battery_level_chrc.lock().unwrap().object_path().clone());
 
     let battery_service_interface = BatteryServiceInterface(battery_service.clone());
     let battery_service_path = battery_service.lock().unwrap().object_path().clone();
@@ -360,7 +369,7 @@ async fn get_report_chrc(
         .lock()
         .unwrap()
         .add_descriptor_path(rr_desc_path.clone());
-    
+
     report_chrc.lock().unwrap().ccc_desc = Some(ccc_desc.clone());
     report_chrc.lock().unwrap().rr_desc = Some(rr_desc.clone());
 
@@ -482,7 +491,7 @@ async fn get_hid_service(
     hid_service.lock().unwrap().protocol_mode_chrc = Some(protocol_mode_chrc.clone());
     hid_service.lock().unwrap().hid_info_chrc = Some(hid_info_chrc.clone());
     hid_service.lock().unwrap().hid_control_point_chrc = Some(hid_control_point_chrc.clone());
-    
+
     let hid_service_interface = HidServiceInterface(hid_service.clone());
 
     connection
