@@ -1,3 +1,4 @@
+use std::env;
 use crate::bluez::advertisment::register_advertisement;
 use crate::bluez::agent::{register_agent, Agent};
 use crate::constants::{ADVERT_PATH, AGENT_PATH};
@@ -21,7 +22,12 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("Starting GamepadKI...");
+
+    let mut args = env::args();
+
+    let ms_timeout = args.nth(1).unwrap_or("1000".to_string()).parse::<u64>().unwrap();
+    
+    println!("Starting GamepadKI... Refreshing every {}ms", ms_timeout);
 
     let _ = init_hardware();
 
@@ -47,7 +53,7 @@ async fn main() -> Result<()> {
     println!("Advertisement registered!");
 
     let mut updater_service =
-        GamepadUpdater::new(gamepad_values.clone(), app, Duration::from_millis(1000));
+        GamepadUpdater::new(gamepad_values.clone(), app, Duration::from_millis(ms_timeout));
     updater_service.start();
 
     println!("GamepadKI started! Waiting for gamepad connection...");

@@ -117,7 +117,6 @@ impl ReportChrcInterface {
 
     #[zbus(signal)]
     //async fn properties_changed(&self) -> zbus::Result<()>;
-
     pub async fn notify(&mut self, signal_emitter: SignalEmitter<'_>) -> zbus::Result<()> {
         let report = self
             .0

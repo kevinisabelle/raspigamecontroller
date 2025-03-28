@@ -10,7 +10,7 @@ use zbus::zvariant::{OwnedValue, Value};
 #[derive(Debug)]
 pub struct BatteryLevelChrc {
     pub base: BaseGattCharacteristic,
-    pub value: u8,
+    pub value: Vec<u8>,
 }
 
 object_path! {
@@ -20,14 +20,14 @@ object_path! {
             let flags = vec!["read".to_string()];
             Self {
                 base: BaseGattCharacteristic::new(path, uuid, flags, service, vec![]),
-                value: 0x64,
+                value: vec![0x64],
             }
         }
 
         pub fn get_properties(&self) -> ObjectInterfaces {
 
             let mut properties = HashMap::new();
-            let owned_value = OwnedValue::try_from(Value::from(vec![self.value.clone()])).unwrap();
+            let owned_value = OwnedValue::try_from(Value::from(self.value.clone())).unwrap();
 
             extend_chrc_props!(&self, properties, owned_value);
 
@@ -41,6 +41,16 @@ pub(crate) struct BatteryLevelChrcInterface(pub Arc<Mutex<BatteryLevelChrc>>);
 #[gatt_characteristic()]
 impl BatteryLevelChrcInterface {
     fn read_value(&self, _options: HashMap<String, OwnedValue>) -> zbus::fdo::Result<Vec<u8>> {
-        Ok(vec![self.0.lock().unwrap().value.clone()])
+        let value = self.0.lock().unwrap().value.clone();
+        println!(
+            "Battery Level read handler called, Hex: {}",
+            value
+                .iter()
+                .map(|b| format!("{:02X}", b))
+                .collect::<Vec<_>>()
+                .join(" ")
+        );
+
+        Ok(value)
     }
 }

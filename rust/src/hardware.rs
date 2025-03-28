@@ -62,12 +62,12 @@ pub fn read_pot(_index: usize) -> u8 {
 /// Returns true if pressed.
 pub fn read_button(index: usize) -> io::Result<bool> {
     let gpio = Gpio::new().unwrap();
-    let pin = gpio.get(BUTTONS_GPIO[index]).unwrap().into_input_pulldown();
+    let pin = gpio.get(BUTTONS_GPIO[index]).unwrap().into_input_pullup();
     // In Python a 0 equals pressed.
-    Ok(pin.read() == Level::Low)
+    let pressed = pin.read() == Level::Low;
+    Ok(pressed)
 }
 
-/// Reads an analog value from a specified MCP3008 channel (0-7) via SPI.
 pub fn read_mcp3008(channel: u8) -> io::Result<u16> {
     if channel > 7 {
         return Err(io::Error::new(
@@ -75,25 +75,47 @@ pub fn read_mcp3008(channel: u8) -> io::Result<u16> {
             "Channel must be between 0 and 7",
         ));
     }
-    let mut spi = Spidev::open("/dev/spidev1.0")?;
+
+    let mut spi = match Spidev::open("/dev/spidev1.0") {
+        Ok(spi) => spi,
+        Err(e) => {
+            eprintln!("Error opening SPI device: {}", e);
+            return Err(e);
+        }
+    };
+
     let options = SpidevOptions::new()
         .bits_per_word(8)
         .max_speed_hz(1_000_000)
         .mode(SpiModeFlags::SPI_MODE_0)
         .build();
-    spi.configure(&options)?;
+
+    if let Err(e) = spi.configure(&options) {
+        eprintln!("Error configuring SPI: {}", e);
+        return Err(io::Error::new(io::ErrorKind::Other, e));
+    }
 
     // Prepare transmission: start bit, configuration, and dummy byte.
-    let mut tx_buf = [1u8, (8 + channel) << 4, 0u8];
-    let mut rx_buf = tx_buf;
+    // Send leading zeros and construct the control byte.
+    let mut tx_buf = [0x01, (0x08 + channel) << 4, 0x00];
+    let mut rx_buf = [0x00, 0x00, 0x00];
+
     {
-        let mut transfer = SpidevTransfer::read_write(&mut rx_buf, &mut tx_buf);
-        spi.transfer(&mut transfer)?;
+        let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
+        if let Err(e) = spi.transfer(&mut transfer) {
+            eprintln!("Error during SPI transfer: {}", e);
+            return Err(io::Error::new(io::ErrorKind::Other, e));
+        }
     }
-    // Combine bytes.
-    let result = (((rx_buf[1] & 3) as u16) << 8) | (rx_buf[2] as u16);
+
+    // Extract the result.
+    let mut result: u16 = ((rx_buf[1] as u16) << 8) | (rx_buf[2] as u16);
+    result &= 0x3FF;
+
+    let raw_output: u16 = result & 0x3FF; // 10-bit value.
+
     // Resize 10-bit (0-1023) value to 8-bit (0-255).
-    Ok(result / 4)
+    Ok(raw_output / 4)
 }
 
 /// Inverts logarithmic mapping from ADC value to a linear 0-255 scale.

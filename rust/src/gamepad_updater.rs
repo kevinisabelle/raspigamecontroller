@@ -1,7 +1,7 @@
 ﻿// rust
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc, Mutex,
+    atomic::{AtomicBool, Ordering}, Arc,
+    Mutex,
 };
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
@@ -37,7 +37,7 @@ impl GamepadUpdater {
     /// Starts the background polling thread.
     pub fn start(&mut self) {
         println!("GamepadUpdater start...");
-        
+
         if !self.running.load(Ordering::SeqCst) {
             self.running.store(true, Ordering::SeqCst);
             let poll_interval = self.poll_interval;
@@ -50,9 +50,9 @@ impl GamepadUpdater {
                         app.lock().unwrap().notify_hid_report();
                     }
                     thread::sleep(poll_interval);
-            }
+                }
             }));
-            
+
             println!("GamepadUpdater started");
         } else {
             println!("GamepadUpdater already running");
