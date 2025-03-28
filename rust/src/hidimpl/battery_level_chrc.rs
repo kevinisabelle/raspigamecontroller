@@ -25,10 +25,8 @@ object_path! {
         }
 
         pub fn get_properties(&self) -> ObjectInterfaces {
-
             let mut properties = HashMap::new();
             let owned_value = OwnedValue::try_from(Value::from(self.value.clone())).unwrap();
-
             extend_chrc_props!(&self, properties, owned_value);
 
             properties

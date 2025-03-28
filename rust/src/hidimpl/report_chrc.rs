@@ -19,7 +19,6 @@ pub struct ReportChrc {
     pub gamepad_values: Arc<Mutex<GamepadValues1>>,
     pub rr_desc: Option<Arc<Mutex<ReportReferenceDesc>>>,
     pub ccc_desc: Option<Arc<Mutex<ClientCharacteristicConfigurationDesc>>>,
-
     pub notifying: bool,
 }
 
@@ -55,12 +54,9 @@ object_path! {
         }
 
         pub fn get_properties(&self) -> ObjectInterfaces {
-
             let mut properties = HashMap::new();
             let owned_value = OwnedValue::try_from(Value::from(self.gamepad_values.lock().unwrap().get_report().clone())).unwrap();
-
             extend_chrc_props!(&self, properties, owned_value);
-
             extend_option_prop!(&self.ccc_desc, properties);
             extend_option_prop!(&self.rr_desc, properties);
 

@@ -1,1 +1,0 @@
-sudo dbus-monitor --system "interface='org.bluez.LEAdvertisement1'"
