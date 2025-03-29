@@ -1,20 +1,19 @@
-﻿use crate::hidimpl::battery_service::BatteryService;
+﻿use crate::extend_option_prop;
+use crate::hidimpl::battery_service::BatteryService;
 use crate::hidimpl::device_info_service::DeviceInfoService;
 use crate::hidimpl::hid_service::HidService;
 use crate::utils::{ObjectInterfaces, ObjectPathTrait};
-use crate::{extend_option_prop, extend_service_props};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use zbus::interface;
-use zbus::zvariant::OwnedValue;
 
 #[derive(Debug, Clone)]
 pub struct GattApplication {
     pub path: String,
     pub hid_service: Option<Arc<Mutex<HidService>>>,
     pub battery_service: Option<Arc<Mutex<BatteryService>>>,
-    pub device_info_service: Option<Arc<Mutex<DeviceInfoService>>>,
+    pub device_info_service: Option<Arc<Mutex<DeviceInfoService>>>
 }
 
 impl ObjectPathTrait for GattApplication {
@@ -33,13 +32,22 @@ impl GattApplication {
         }
     }
 
-    pub fn notify_hid_report(&self) {
+    pub async fn notify_hid_report(&self) {
+        
+        // println!("notify_hid_report called");
         if let Some(hid_service) = &self.hid_service {
-            let hid_service = hid_service.lock().unwrap();
-            if let Some(report_chrc) = &hid_service.report_chrc {
-                let report_chrc = report_chrc.lock().unwrap();
-                report_chrc.notify_value_changed();
+            if let Some(report_chrc) = &hid_service.lock().unwrap().report_chrc {
+                report_chrc
+                        .lock()
+                        .unwrap()
+                        .emit_report_changed_signal()
+                        .await
+                        .unwrap();
+            } else {
+                println!("Report characteristic is not available");
             }
+        } else {
+            println!("HID service is not available");
         }
     }
 
@@ -67,9 +75,7 @@ pub(crate) struct ObjectManagerInterface(pub Arc<Mutex<GattApplication>>);
 #[interface(name = "org.freedesktop.DBus.ObjectManager")]
 impl ObjectManagerInterface {
     // This is the method BlueZ will call to discover your GATT structure
-    pub fn get_managed_objects(
-        &self,
-    ) -> zbus::fdo::Result<ObjectInterfaces> {
+    pub fn get_managed_objects(&self) -> zbus::fdo::Result<ObjectInterfaces> {
         let locked_app = &self.0.lock().unwrap();
         let mut objects = HashMap::new();
 

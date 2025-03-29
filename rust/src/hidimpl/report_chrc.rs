@@ -8,10 +8,9 @@ use crate::{extend_chrc_props, extend_option_prop, object_path};
 use macros::gatt_characteristic;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use zbus::interface;
-use zbus::object_server::SignalEmitter;
-use zbus::zvariant::OwnedValue;
-use zbus::zvariant::Value;
+use zbus::names::{InterfaceName, MemberName};
+use zbus::zvariant::{OwnedValue, Value};
+use zbus::{interface, Connection};
 
 #[derive(Debug)]
 pub struct ReportChrc {
@@ -20,11 +19,12 @@ pub struct ReportChrc {
     pub rr_desc: Option<Arc<Mutex<ReportReferenceDesc>>>,
     pub ccc_desc: Option<Arc<Mutex<ClientCharacteristicConfigurationDesc>>>,
     pub notifying: bool,
+    pub connection: Connection, // Store the connection
 }
 
 object_path! {
     impl ReportChrc {
-        pub fn new(path: String, service: String, gamepad_values: Arc<Mutex<GamepadValues1>>) -> Self {
+        pub fn new(path: String, service: String, gamepad_values: Arc<Mutex<GamepadValues1>>, connection: Connection) -> Self {
             let uuid = GATT_REPORT_UUID.to_string();
             let flags = vec!["read".to_string(), "notify".to_string(), "write-without-response".to_string()];
 
@@ -34,6 +34,7 @@ object_path! {
                 notifying: false,
                 rr_desc: None,
                 ccc_desc: None,
+                connection
             }
         }
 
@@ -41,16 +42,49 @@ object_path! {
             self.base.descriptors.push(path);
         }
 
-        pub fn notify_value_changed(&self) {
-            let report = self.gamepad_values.lock().unwrap().get_report().clone();
-            println!(
-                "Report notify value changed, Hex: {}",
+        pub async fn emit_report_changed_signal(&self) -> zbus::Result<()> {
+
+            if !self.notifying {
+                return Ok(());
+            }
+
+            let object_path = self.object_path();
+            let gamepad_values = self.gamepad_values.clone();
+            let connection = self.connection.clone();
+
+            let report = gamepad_values.lock().unwrap().get_report().clone();
+
+            let mut changed: HashMap<String, OwnedValue> = HashMap::new();
+            let report_value = OwnedValue::try_from(Value::from(report.clone())).unwrap();
+            changed.insert("Value".to_string(), report_value);
+
+            let interface_name = InterfaceName::try_from("org.bluez.GattCharacteristic1".to_string()).unwrap();
+            let signal_name = MemberName::try_from("PropertiesChanged".to_string()).unwrap();
+            let interface_name_props = InterfaceName::try_from("org.freedesktop.DBus.Properties".to_string()).unwrap();
+
+            connection.emit_signal(
+                    None::<&str>,
+                    object_path.as_str(),
+                    interface_name_props.as_str(),
+                    signal_name.as_str(),
+                    &(
+                        interface_name.as_str(),
+                        changed,
+                        Vec::<String>::new(),
+                    ),
+                )
+                .await?;
+
+            /*println!(
+                "Report changed signal emitted, Hex: {}",
                 report
                     .iter()
                     .map(|b| format!("{:02X}", b))
                     .collect::<Vec<_>>()
                     .join(" ")
-            );
+            );*/
+
+            Ok(())
         }
 
         pub fn get_properties(&self) -> ObjectInterfaces {
@@ -108,48 +142,6 @@ impl ReportChrcInterface {
     fn stop_notify(&mut self) -> zbus::fdo::Result<()> {
         self.0.lock().unwrap().notifying = false;
         println!("Report stop notify called");
-        Ok(())
-    }
-
-    #[zbus(signal)]
-    //async fn properties_changed(&self) -> zbus::Result<()>;
-    pub async fn notify(&mut self, signal_emitter: SignalEmitter<'_>) -> zbus::Result<()> {
-        let report = self
-            .0
-            .lock()
-            .unwrap()
-            .gamepad_values
-            .lock()
-            .unwrap()
-            .get_report();
-
-        println!(
-            "Sending notification with values. Hex: {}",
-            report
-                .iter()
-                .map(|b| format!("{:02X}", b))
-                .collect::<Vec<_>>()
-                .join(" ")
-        );
-
-        let mut changed = HashMap::new();
-        changed.insert("Value", Value::from(report));
-
-        let interface_name = InterfaceName::try_from("org.freedesktop.DBus.Properties").unwrap();
-        // No invalidated properties.
-        let invalidated_properties = Cow::Borrowed(&[] as &[_]);
-
-        // Emit the signal.
-        let result = Properties::properties_changed(
-            &signal_emitter,
-            interface_name,
-            changed,
-            invalidated_properties,
-        )
-        .await;
-
-        println!("Properties::properties_changed result: {:?}", result);
-
         Ok(())
     }
 }

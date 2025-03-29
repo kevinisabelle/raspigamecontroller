@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
 
     let mut args = env::args();
 
-    let ms_timeout = args.nth(1).unwrap_or("1000".to_string()).parse::<u64>().unwrap();
+    let ms_timeout = args.nth(1).unwrap_or("20".to_string()).parse::<u64>().unwrap();
     
     println!("Starting GamepadKI... Refreshing every {}ms", ms_timeout);
 

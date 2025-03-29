@@ -340,6 +340,7 @@ async fn get_report_chrc(
         format!("{}/rpt_ch", hid_service_path.clone()),
         hid_service_path.clone(),
         gamepad_values,
+        connection.clone(),
     )));
 
     let report_chrc_interface = ReportChrcInterface(report_chrc.clone());
@@ -375,7 +376,6 @@ async fn get_report_chrc(
 
     register_object(connection, ccc_desc_path.clone(), ccc_desc_interface).await?;
     register_object(connection, rr_desc_path.clone(), rr_desc_interface).await?;
-
     register_object(connection, report_chrc_path.clone(), report_chrc_interface).await?;
 
     Ok(report_chrc)

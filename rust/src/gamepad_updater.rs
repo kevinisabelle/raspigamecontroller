@@ -5,7 +5,7 @@ use std::sync::{
 };
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
-
+use tokio::runtime::Runtime;
 use crate::gamepad_values::GamepadValues1;
 use crate::hardware::{read_button, read_slider, read_slider_middle};
 use crate::hidimpl::gatt_application::GattApplication;
@@ -16,6 +16,7 @@ pub struct GamepadUpdater {
     poll_interval: Duration,
     running: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
+    rt: Arc<Runtime>,
 }
 
 impl GamepadUpdater {
@@ -25,14 +26,17 @@ impl GamepadUpdater {
         app: Arc<Mutex<GattApplication>>,
         poll_interval: Duration,
     ) -> Self {
+        let rt = Arc::new(Runtime::new().unwrap());
         Self {
             gamepad_def,
             app,
             poll_interval,
             running: Arc::new(AtomicBool::new(false)),
             thread: None,
+            rt,
         }
     }
+
 
     /// Starts the background polling thread.
     pub fn start(&mut self) {
@@ -44,13 +48,16 @@ impl GamepadUpdater {
             let running = self.running.clone();
             let gamepad_def = self.gamepad_def.clone();
             let app = self.app.clone();
+            let rt = self.rt.clone();
             self.thread = Some(thread::spawn(move || {
-                while running.load(Ordering::SeqCst) {
-                    if update_gamepad_controls(&gamepad_def) {
-                        app.lock().unwrap().notify_hid_report();
+                rt.block_on(async {
+                    while running.load(Ordering::SeqCst) {
+                        if update_gamepad_controls(&gamepad_def) {
+                            app.lock().unwrap().notify_hid_report().await;
+                        }
+                        tokio::time::sleep(poll_interval).await;
                     }
-                    thread::sleep(poll_interval);
-                }
+                });
             }));
 
             println!("GamepadUpdater started");
